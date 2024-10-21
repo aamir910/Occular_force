@@ -61,61 +61,30 @@ function App() {
     const uniqueNodes = Array.from(nodesSet);
     return { nodes: uniqueNodes, links };
   };
-
-  const getNodeColor = (type) => {
-    switch (type) {
-      case 'DISORDER': return '#ff4d4f';
-      case 'KNOWN GENE': return '#1890ff';
-      case 'Repurposing Candidate': return '#52c41a';
-      case 'Approved Drug': return '#faad14';
-      default: return '#d9d9d9';
-    }
-  };
-
-  const renderLegend = () => {
-    return (
-      <ul>
-        {nodeTypes.map((type) => (
-          <li key={type} style={{ color: getNodeColor(type) }}>
-            <span
-              style={{
-                display: 'inline-block',
-                width: '12px',
-                height: '12px',
-                backgroundColor: getNodeColor(type),
-                marginRight: '8px',
-              }}
-            ></span>
-            {type}
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
+  
   return (
-    <div className="app-container" style={{ padding: '20px' }}>
-   
-      <Row gutter={16}>
-        {/* Legend Card */}
-        <Col span={6}>
-          <Card title="Legend" bordered={true}>
-            {<Legend/> }
-          </Card>
-        </Col>
+<div className="app-container" style={{ padding: '20px' }}>
+  <Row gutter={16}>
+    {/* Legend Card */}
+    <Col span={6}>
+      <Card title="Legend" bordered={true} style={{ backgroundColor: '#ffffff', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+        {<Legend />}
+      </Card>
+    </Col>
 
-        {/* 2D Force Network Graph Card */}
-        <Col span={18}>
-          <Card title="Force Network Graph" bordered={true}>
-            {nodes.length > 0 && links.length > 0 ? (
-              <ForceNetworkGraph nodes={nodes} links={links} />
-            ) : (
-              <p>Loading graph data...</p>
-            )}
-          </Card>
-        </Col>
-      </Row>
-    </div>
+    {/* 2D Force Network Graph Card */}
+    <Col span={18}>
+      <Card title="Force Network Graph" bordered={true} style={{ backgroundColor: '#ffffff', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+        {nodes.length > 0 && links.length > 0 ? (
+          <ForceNetworkGraph nodes={nodes} links={links} />
+        ) : (
+          <p>Loading graph data...</p>
+        )}
+      </Card>
+    </Col>
+  </Row>
+</div>
+
   );
 }
 

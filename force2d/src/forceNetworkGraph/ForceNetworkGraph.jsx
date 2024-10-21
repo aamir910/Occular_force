@@ -84,6 +84,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
       backgroundColor="white"
       nodeRelSize={10}
       enableZoomInteraction={true}
+      width={900}
     />
   );
 };
