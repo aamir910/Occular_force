@@ -5,7 +5,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
   const graphRef = useRef();
 
   // Prepare graph data format for ForceGraph
-  const graphData = {
+  let  graphData = {
     nodes: nodes.map(node => ({
       id: node.id,
       group: node.type,
@@ -13,6 +13,11 @@ const ForceNetworkGraph = ({ nodes, links }) => {
     })),
     links: links.map(link => ({ source: link.source, target: link.target })),
   };
+
+let array = nodes.filter(node =>node.id === "OGUCHI DISEASE" )
+let array2 = links.filter(node =>node.source === "SAG" )
+console.log(graphData ,array,array2, "array")
+
 
   // Function to draw different node shapes based on the group and class
   const drawNode = (node, ctx) => {
@@ -37,11 +42,41 @@ const ForceNetworkGraph = ({ nodes, links }) => {
         case 'Isolated':
           ctx.fillStyle = 'green';
           break;
-        // Add more class cases here...
+        case 'Isolated cases':
+          ctx.fillStyle = 'orange';
+          break;
+        case 'Mitochondrial':
+          ctx.fillStyle = 'purple';
+          break;
+        case 'Other':
+          ctx.fillStyle = 'pink';
+          break;
+        case 'X-linked':
+          ctx.fillStyle = 'brown';
+          break;
+        case 'X-linked dominant':
+          ctx.fillStyle = 'cyan';
+          break;
+        case 'X-linked recessive':
+          ctx.fillStyle = 'magenta';
+          break;
+        case 'XLR': // X-linked recessive (shortened as XLR)
+          ctx.fillStyle = 'gray';
+          break;
+        case 'KNOWN GENE':
+          ctx.fillStyle = 'yellow';
+          break;
+        case 'Repurposing Candidate':
+          ctx.fillStyle = 'blue';
+          break;
+        case 'Approved Drug':
+          ctx.fillStyle = 'green';
+          break;
         default:
           ctx.fillStyle = 'gray'; // Default color for other classes
           break;
       }
+      
     } else if (node.group === 'KNOWN GENE') {
       // Draw a circle for 'KNOWN GENE'
       ctx.arc(node.x, node.y, shapeSize, 0, 2 * Math.PI, false);
