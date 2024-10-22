@@ -102,7 +102,7 @@ function App() {
   const graphData = jsonData ? createNodesAndLinks(jsonData) : { nodes: [], links: [] };
 
   return (
-    <div className="app-container" style={{ padding: '20px' }}>
+    <div className="app-container" style={{ padding: '5px' }}>
       <Row gutter={16}>
         {/* Legend with checkboxes */}
         <Col span={6}>
