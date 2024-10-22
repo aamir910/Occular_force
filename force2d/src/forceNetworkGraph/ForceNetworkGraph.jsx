@@ -119,7 +119,7 @@ console.log(graphData ,array,array2, "array")
       backgroundColor="white"
       nodeRelSize={10}
       enableZoomInteraction={true}
-      width={1000}
+      width={999}
     />
   );
 };
