@@ -4,7 +4,7 @@ import { Row, Col, Checkbox } from 'antd';
 const Legend = ({ checkedClasses, onClassChange }) => {
   const legendItems = [
     {
-      group: 'Disorder',
+      group: 'Disorders',
       items: [
         { shape: 'triangle', color: 'red', label: 'Autosomal dominant', class: 'Autosomal dominant' },
         { shape: 'triangle', color: 'blue', label: 'Autosomal recessive', class: 'Autosomal recessive' },
@@ -31,9 +31,9 @@ const Legend = ({ checkedClasses, onClassChange }) => {
       ],
     },
     {
-      group: 'Approved drug',
+      group: 'Approved drugs',
       items: [
-        { shape: 'capsule', color: 'green', label: 'Approved Drug', class: 'Approved Drug' },
+        { shape: 'capsule', color: 'green', label: 'Approved drugs', class: 'Approved Drug' },
       ],
     },
   ];
@@ -45,7 +45,7 @@ const Legend = ({ checkedClasses, onClassChange }) => {
           <dl style={{ margin: 0, padding: 0 }}> {/* Removed default margin/padding */}
             <dt style={{ fontWeight: 'bold' ,  display: 'flex',
                   alignItems: 'start',
-                  justifyContent: 'flex-start' , }}>{group.group}</dt> {/* Group label */}
+                  justifyContent: 'flex-start' ,fontSize:"15px" }}>{group.group}</dt> {/* Group label */}
             {group.items.map((item, index) => (
               <dd
                 key={index}
