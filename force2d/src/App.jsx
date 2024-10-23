@@ -78,11 +78,11 @@ function App() {
             links.push({ source: disorder, target: approvedDrug });
           }
         }
-        if (knownGene && approvedDrug) {
-          const linkKey = `${knownGene}-${approvedDrug}`;
+        if (knownGene && repurposingCandidate) {
+          const linkKey = `${knownGene}-${repurposingCandidate}`;
           if (!linksSet.has(linkKey)) {
             linksSet.add(linkKey);
-            links.push({ source: knownGene, target: approvedDrug });
+            links.push({ source: knownGene, target: repurposingCandidate });
           }
         }
       }
