@@ -47,12 +47,12 @@ function App() {
       const disorder = row.DISORDER;
       const knownGene = row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"];
       const repurposingCandidate = row["Repurposing candidate name"];
-      const approvedDrug = row["Approved_drug_chembl_ID"];
+      const approvedDrug = row["Approved_drug_name"];
       const classOfNode = row["MODE OF INHERITANCE"];
       const EFO_Ids_Mondo = row.EFO_Ids_Mondo;
       const ORPHanet_ID = row.ORPHanet_ID;
       const EYE_FINDING = row["EYE FINDING"];
-      const Repurposing_chembL_ID = row["Repurposing candidate chembL_ID"];
+      const Repurposing_candidate_chembL_ID = row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
 
       if (checkedClasses[classOfNode]) {
@@ -64,8 +64,8 @@ function App() {
             EFO_Ids_Mondo: EFO_Ids_Mondo,
             ORPHanet_ID: ORPHanet_ID,
             EYE_FINDING: EYE_FINDING,
-            Modeofinheritance: "",
-            Repurposing_chembL_ID: "",
+            Mode_of_inheritance: "",
+            Repurposing_candidate_chembL_ID: "",
             Approved_drug_chembl_ID: "",
           });
         }
@@ -77,8 +77,8 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
-            Modeofinheritance: classOfNode,
-            Repurposing_chembL_ID: "",
+            Mode_of_inheritance: classOfNode,
+            Repurposing_candidate_chembL_ID: "",
             Approved_drug_chembl_ID: "",
           });
         }
@@ -90,9 +90,9 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
-            Modeofinheritance: "",
-            Repurposing_chembL_ID: Repurposing_chembL_ID,
             Approved_drug_chembl_ID: "",
+            Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
+            Mode_of_inheritance: "",
           });
         }
         if (approvedDrug && !nodesMap.has(approvedDrug)) {
@@ -103,7 +103,10 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
+            Repurposing_candidate_chembL_ID: "",
+            Mode_of_inheritance: "",
             Approved_drug_chembl_ID: Approved_drug_chembl_ID,
+            
           });
         }
 

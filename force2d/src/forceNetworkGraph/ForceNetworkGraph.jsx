@@ -15,8 +15,8 @@ const ForceNetworkGraph = ({ nodes, links }) => {
       EFO_Ids_Mondo: node.EFO_Ids_Mondo,
       ORPHanet_ID: node.ORPHanet_ID,
       EYE_FINDING: node.EYE_FINDING , 
-      Modeofinheritance: node.Modeofinheritance , 
-      Repurposing_chembL_ID: node.Repurposing_chembL_ID,
+      Mode_of_inheritance: node.Mode_of_inheritance , 
+      Repurposing_candidate_chembL_ID: node.Repurposing_candidate_chembL_ID,
       Approved_drug_chembl_ID: node.Approved_drug_chembl_ID,
 
     })),
@@ -129,7 +129,8 @@ const ForceNetworkGraph = ({ nodes, links }) => {
 
 // DataTable component to display node details
 const DataTable = ({ node, onClose }) => {
-  console.log(node )
+  console.log(node);
+
   // Define the columns for the Ant Design table
   const columns = [
     { title: 'Property', dataIndex: 'property', key: 'property' },
@@ -138,7 +139,8 @@ const DataTable = ({ node, onClose }) => {
       dataIndex: 'value', 
       key: 'value', 
       render: (text, record) => {
-        if (record.property === 'EFO_Ids_Mondo' || record.property === 'ORPHanet_ID') {
+        console.log(record ,"record")
+        if (['EFO_Ids_Mondo', 'ORPHanet_ID', "Mode_of_inheritance", "Repurposing_candidate_chembL_ID","Approved_drug_chembl_ID"].includes(record.property)) {
           return <a href={`https://google.com/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
         }
         return text;
@@ -146,12 +148,29 @@ const DataTable = ({ node, onClose }) => {
     },
   ];
 
-  // Data for the table based on the selected node
-  const dataSource = [
-    { key: 'EFO_Ids_Mondo', property: 'EFO_Ids_Mondo', value: node.EFO_Ids_Mondo },
-    { key: 'ORPHanet_ID', property: 'ORPHanet_ID', value: node.ORPHanet_ID },
-    { key: 'EYE_FINDING', property: 'EYE_FINDING', value: node.EYE_FINDING },
-  ];
+  // Conditionally add data based on the node.group value
+  let dataSource = [];
+
+  if (node.group === "KNOWN GENE") {
+    dataSource = [
+      { key: 'Mode_of_inheritance', property: 'Mode_of_inheritance', value: node.Mode_of_inheritance },
+    ];
+  } else if (node.group === "Repurposing Candidate" ) {
+    dataSource = [
+      { key: 'Repurposing_candidate_chembL_ID', property: 'Repurposing_candidate_chembL_ID', value: node.Repurposing_candidate_chembL_ID },
+    ];
+  } else if (node.group === "Approved Drug") {
+    dataSource = [
+      { key: 'Approved_drug_chembl_ID', property: 'Approved_drug_chembl_ID', value: node.Approved_drug_chembl_ID },
+    ];
+  } else {
+    // Default properties if no specific group matches
+    dataSource = [
+      { key: 'EFO_Ids_Mondo', property: 'EFO_Ids_Mondo', value: node.EFO_Ids_Mondo },
+      { key: 'ORPHanet_ID', property: 'ORPHanet_ID', value: node.ORPHanet_ID },
+      { key: 'EYE_FINDING', property: 'EYE_FINDING', value: node.EYE_FINDING },
+    ];
+  }
 
   return (
     <div style={{
@@ -166,11 +185,12 @@ const DataTable = ({ node, onClose }) => {
       zIndex: 10,
       width: 400
     }}>
-      <h2>{node.id} </h2>
+      <h2>{node.id}</h2>
       <Table columns={columns} dataSource={dataSource} pagination={false} />
       <Button type="primary" onClick={onClose} style={{ marginTop: '10px' }}>Close</Button>
     </div>
   );
 };
+
 
 export default ForceNetworkGraph;
