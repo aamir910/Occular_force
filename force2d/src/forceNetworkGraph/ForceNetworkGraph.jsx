@@ -111,6 +111,13 @@ console.log(graphData ,array,array2, "array")
   }, [graphData]);
 
   return (
+    <div
+    style={{
+      width: "99%",
+      height: "100vh",
+      overflow: "hidden",
+    }}>
+
     <ForceGraph2D
       ref={graphRef}
       graphData={graphData}
@@ -119,8 +126,10 @@ console.log(graphData ,array,array2, "array")
       backgroundColor="white"
       nodeRelSize={10}
       enableZoomInteraction={true}
-      width={999}
+      // width={999}
     />
+
+      </div>
   );
 };
 

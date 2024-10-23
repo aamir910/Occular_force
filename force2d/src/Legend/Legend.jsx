@@ -4,7 +4,7 @@ import { Row, Col, Checkbox } from 'antd';
 const Legend = ({ checkedClasses, onClassChange }) => {
   const legendItems = [
     {
-      group: 'DISORDER',
+      group: 'Disorder',
       items: [
         { shape: 'triangle', color: 'red', label: 'Autosomal dominant', class: 'Autosomal dominant' },
         { shape: 'triangle', color: 'blue', label: 'Autosomal recessive', class: 'Autosomal recessive' },
@@ -19,19 +19,19 @@ const Legend = ({ checkedClasses, onClassChange }) => {
       ],
     },
     {
-      group: 'KNOWN GENE',
+      group: 'Genes',
       items: [
-        { shape: 'circle', color: 'yellow', label: 'KNOWN GENE', class: 'KNOWN GENE' },
+        { shape: 'circle', color: 'yellow', label: 'Known Gene', class: 'KNOWN GENE' },
       ],
     },
     {
-      group: 'Repurposing Candidate',
+      group: 'Repurposing candidates',
       items: [
-        { shape: 'capsule', color: 'blue', label: 'Repurposing Candidate', class: 'Repurposing Candidate' },
+        { shape: 'capsule', color: 'blue', label: 'Repurposing candidates', class: 'Repurposing Candidate' },
       ],
     },
     {
-      group: 'Approved Drug',
+      group: 'Approved drug',
       items: [
         { shape: 'capsule', color: 'green', label: 'Approved Drug', class: 'Approved Drug' },
       ],
@@ -39,42 +39,55 @@ const Legend = ({ checkedClasses, onClassChange }) => {
   ];
 
   return (
-    <Row>
+    <Row>   
       {legendItems.map((group, groupIndex) => (
-        <Col key={groupIndex} span={24} style={{ marginBottom: '16px' }}>
-          <h5>{group.group}</h5> {/* Group label */}
-          {group.items.map((item, index) => (
-            <div key={index} style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
-              {/* Shape representation */}
-              {item.shape === 'triangle' && (
-                <>
-                  <svg width="20" height="20" style={{ marginRight: '8px' }}>
-                    <polygon points="10,0 0,20 20,20" fill={item.color} />
+        <Col key={groupIndex} span={24} style={{ marginBottom: '2px' }}>
+          <dl style={{ margin: 0, padding: 0 }}> {/* Removed default margin/padding */}
+            <dt style={{ fontWeight: 'bold' ,  display: 'flex',
+                  alignItems: 'start',
+                  justifyContent: 'flex-start' , }}>{group.group}</dt> {/* Group label */}
+            {group.items.map((item, index) => (
+              <dd
+                key={index}
+                style={{
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'start',
+                  justifyContent: 'flex-start' ,
+                  marginLeft: 0, // Ensure there's no left indentation
+                }}
+              >
+                {/* Shape representation */}
+                {item.shape === 'triangle' && (
+                  <>
+                    <svg width="20" height="20" style={{ marginRight: '2px' }}>
+                      <polygon points="10,0 0,20 20,20" fill={item.color} />
+                    </svg>
+                    {/* Checkbox only for triangle */}
+                    <Checkbox
+                      checked={checkedClasses[item.class]} // Check the checkbox based on the prop value
+                      onChange={(e) => onClassChange(item.class, e.target.checked)} // Trigger prop function on change
+                      style={{ marginLeft: '2px' }}
+                    />
+                  </>
+                )}
+                {item.shape === 'circle' && (
+                  <svg width="20" height="20" style={{ marginRight: '2px' }}>
+                    <circle cx="10" cy="10" r="10" fill={item.color} />
                   </svg>
-                  {/* Checkbox only for triangle */}
-                  <Checkbox
-                    checked={checkedClasses[item.class]} // Check the checkbox based on the prop value
-                    onChange={(e) => onClassChange(item.class, e.target.checked)} // Trigger prop function on change
-                    style={{ marginLeft: '8px' }}
-                  />
-                </>
-              )}
-              {item.shape === 'circle' && (
-                <svg width="20" height="20" style={{ marginRight: '8px' }}>
-                  <circle cx="10" cy="10" r="10" fill={item.color} />
-                </svg>
-              )}
-              {item.shape === 'capsule' && (
-                <svg width="20" height="20" style={{ marginRight: '8px' }}>
-                  <rect x="0" y="5" width="20" height="10" rx="5" ry="5" fill={item.color} />
-                </svg>
-              )}
-              {/* Label */}
-              <div style={{ marginLeft: '8px' }}>
-                {item.label}
-              </div>
-            </div>
-          ))}
+                )}
+                {item.shape === 'capsule' && (
+                  <svg width="20" height="20" style={{ marginRight: '2px' }}>
+                    <rect x="0" y="5" width="20" height="10" rx="5" ry="5" fill={item.color} />
+                  </svg>
+                )}
+                {/* Label */}
+                <div style={{ marginLeft: '3px' }}>
+                  {item.label}
+                </div>
+              </dd>
+            ))}
+          </dl>
         </Col>
       ))}
     </Row>

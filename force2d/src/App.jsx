@@ -102,17 +102,17 @@ function App() {
   const graphData = jsonData ? createNodesAndLinks(jsonData) : { nodes: [], links: [] };
 
   return (
-    <div className="app-container" style={{ padding: '5px' }}>
+    <div className="app-container" style={{ padding: '2px' }}>
       <Row gutter={16}>
         {/* Legend with checkboxes */}
-        <Col span={6}>
+        <Col span={4} >
           <Card title="Legend" bordered={true} style={{ backgroundColor: '#ffffff', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
             <Legend checkedClasses={checkedClasses} onClassChange={handleClassCheckboxChange} />
           </Card>
         </Col>
 
         {/* 2D Force Network Graph */}
-        <Col span={18}>
+        <Col span={20}>
           <Card title="Force Network Graph" bordered={true} style={{ backgroundColor: '#ffffff', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
             {graphData.nodes.length > 0 && graphData.links.length > 0 ? (
               <ForceNetworkGraph nodes={graphData.nodes} links={graphData.links} />
