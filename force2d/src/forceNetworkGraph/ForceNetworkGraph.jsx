@@ -94,7 +94,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
 
     // Draw node ID text
     ctx.fillStyle = 'black';
-    ctx.font = '10px Arial';
+    ctx.font = '15px Arial';
     ctx.fillText(node.id, node.x + shapeSize + 5, node.y);
   };
 
@@ -128,6 +128,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
 };
 
 // DataTable component to display node details
+
 const DataTable = ({ node, onClose }) => {
   console.log(node);
 
