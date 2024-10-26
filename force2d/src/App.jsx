@@ -185,7 +185,7 @@ function App() {
                 links={graphData.links}
               />
             ) : (
-              <p>Loading graph data...</p>
+              <p>No data in current filteration...</p>
             )}
           </Card>
         </Col>
