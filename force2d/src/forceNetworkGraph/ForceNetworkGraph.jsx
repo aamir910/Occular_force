@@ -91,11 +91,14 @@ const ForceNetworkGraph = ({ nodes, links }) => {
     }
 
     ctx.fill();
+if(node.group === 'KNOWN GENE' || node.group === 'Approved Drug' ){
 
-    // Draw node ID text
-    ctx.fillStyle = 'black';
-    ctx.font = '15px Arial';
-    ctx.fillText(node.id, node.x + shapeSize + 5, node.y);
+  // Draw node ID text
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
+  ctx.fillText(node.id, node.x + shapeSize + 5, node.y);
+}
+
   };
 
   // Handle node click to set selected node
@@ -121,6 +124,9 @@ const ForceNetworkGraph = ({ nodes, links }) => {
         nodeRelSize={10}
         enableZoomInteraction={true}
         onNodeClick={handleNodeClick} // Handle node click
+        nodeLabel={(node) => {
+          return `<div style="background-color: black; color: white; padding: 5px; border-radius: 4px;">${node.id}</div>`;
+        }}
       />
       {selectedNode && <DataTable node={selectedNode} onClose={() => setSelectedNode(null)} />}
     </div>
@@ -141,8 +147,14 @@ const DataTable = ({ node, onClose }) => {
       key: 'value', 
       render: (text, record) => {
         console.log(record ,"record")
-        if (['EFO_Ids_Mondo', 'ORPHanet_ID', "Mode_of_inheritance", "Repurposing_candidate_chembL_ID","Approved_drug_chembl_ID"].includes(record.property)) {
-          return <a href={`https://google.com/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
+        if (['EFO_Ids_Mondo'].includes(record.property)) {
+          return <a href={`https://monarchinitiative.org/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
+        }
+        else if ([ 'ORPHanet_ID', "Mode_of_inheritance", "Repurposing_candidate_chembL_ID","Approved_drug_chembl_ID"].includes(record.property)){
+          const id = text.split(":")[1];
+          return <a href={`https://www.orpha.net/en/disease/detail/${id}?name=
+${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
+     
         }
         return text;
       }

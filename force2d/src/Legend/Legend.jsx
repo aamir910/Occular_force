@@ -19,19 +19,19 @@ const Legend = ({ checkedClasses, onClassChange }) => {
       ],
     },
     {
-      group: 'Genes',
+      group: '',
       items: [
         { shape: 'circle', color: 'yellow', label: 'Known Gene', class: 'KNOWN GENE' },
       ],
     },
     {
-      group: 'Repurposing candidates',
+      group: '',
       items: [
         { shape: 'capsule', color: 'blue', label: 'Repurposing candidates', class: 'Repurposing Candidate' },
       ],
     },
     {
-      group: 'Approved drugs',
+      group: '',
       items: [
         { shape: 'capsule', color: 'green', label: 'Approved drugs', class: 'Approved Drug' },
       ],
@@ -72,7 +72,7 @@ const Legend = ({ checkedClasses, onClassChange }) => {
                   </>
                 )}
                 {item.shape === 'circle' && (
-                  <svg width="20" height="20" style={{ marginRight: '2px' }}>
+                  <svg width="20" height="20" style={{ marginRight: '2px', marginTop:"5px" }}>
                     <circle cx="10" cy="10" r="10" fill={item.color} />
                   </svg>
                 )}
