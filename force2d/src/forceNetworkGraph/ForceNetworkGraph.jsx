@@ -152,7 +152,7 @@ const DataTable = ({ node, onClose }) => {
         }
         else if ([ 'ORPHanet_ID', "Mode_of_inheritance", "Repurposing_candidate_chembL_ID","Approved_drug_chembl_ID"].includes(record.property)){
           const id = text.split(":")[1];
-          return <a href={`https://www.orpha.net/en/disease/detail/${id}?name=
+          return <a href={`https://www.orpha.net/en/disease/detail/${id}?name=Orphanet:782
 ${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
      
         }

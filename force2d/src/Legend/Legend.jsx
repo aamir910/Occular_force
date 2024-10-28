@@ -4,7 +4,7 @@ import { Row, Col, Checkbox } from 'antd';
 const Legend = ({ checkedClasses, onClassChange }) => {
   const legendItems = [
     {
-      group: 'Disorders',
+      group: 'Disease',
       items: [
         { shape: 'triangle', color: 'red', label: 'Autosomal dominant', class: 'Autosomal dominant' },
         { shape: 'triangle', color: 'blue', label: 'Autosomal recessive', class: 'Autosomal recessive' },
@@ -15,7 +15,7 @@ const Legend = ({ checkedClasses, onClassChange }) => {
         { shape: 'triangle', color: 'brown', label: 'X-linked', class: 'X-linked' },
         { shape: 'triangle', color: 'cyan', label: 'X-linked dominant', class: 'X-linked dominant' },
         { shape: 'triangle', color: 'magenta', label: 'X-linked recessive', class: 'X-linked recessive' },
-        { shape: 'triangle', color: 'gray', label: 'XLR', class: 'XLR' },
+       
       ],
     },
     {
