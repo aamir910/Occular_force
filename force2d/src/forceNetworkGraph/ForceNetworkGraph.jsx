@@ -199,7 +199,7 @@ ${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
     }}>
       <h2>{node.id}</h2>
       <Table columns={columns} dataSource={dataSource} pagination={false} />
-      <Button type="primary" onClick={onClose} style={{ marginTop: '10px' }}>Close</Button>
+      <Button type="primary" onClick={onClose} style={{ marginTop: '10px' , }}>Close</Button>
     </div>
   );
 };

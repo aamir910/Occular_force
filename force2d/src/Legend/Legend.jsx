@@ -14,30 +14,19 @@ const Legend = ({ checkedClasses, onClassChange, selectedValues }) => {
         { shape: 'triangle', color: 'pink', label: 'Other', class: 'Other' },
         { shape: 'triangle', color: 'cyan', label: 'X-linked dominant', class: 'X-linked dominant' },
         { shape: 'triangle', color: 'magenta', label: 'X-linked recessive', class: 'X-linked recessive' },
-        { shape: 'triangle', color: 'gray', label: '-', class: '-' } // Matches the array exactly
+        { shape: 'triangle', color: 'gray', label: '-', class: '-' }
       ],
     },
     {
       group: '',
       items: [
         { shape: 'circle', color: 'yellow', label: 'Known Gene', class: 'KNOWN GENE' },
-      ],
-    },
-    {
-      group: '',
-      items: [
         { shape: 'capsule', color: 'blue', label: 'Repurposing candidates', class: 'Repurposing Candidate' },
-      ],
-    },
-    {
-      group: '',
-      items: [
         { shape: 'capsule', color: 'green', label: 'Approved drugs', class: 'Approved Drug' },
       ],
     },
   ];
 
-  // Filter legendItems based on selectedValues
   const filteredLegendItems = legendItems.map((group) => {
     if (group.group === 'Disease') {
       return {
@@ -51,12 +40,15 @@ const Legend = ({ checkedClasses, onClassChange, selectedValues }) => {
   });
 
   return (
-    <Row>   
+    <Row>
       {filteredLegendItems.map((group, groupIndex) => (
-        <Col key={groupIndex} span={24} style={{ marginBottom: '2px' }}>
+        <Col key={groupIndex} span={24} style={{ marginTop: group.group === '' ? '25px' : '0' }}>
           <dl style={{ margin: 0, padding: 0 }}>
-            <dt style={{ fontWeight: 'bold', display: 'flex', alignItems: 'start', justifyContent: 'flex-start', fontSize: "15px" }}>
-              {group.group}
+            <dt style={{
+              fontWeight: 'bold', display: 'flex', alignItems: 'start', justifyContent: 'flex-start', fontSize: "15px",
+              marginBottom: group.group === 'Others' ? '10px' : '0'
+            }}>
+              {group.group || null}
             </dt>
             {group.items.map((item, index) => (
               <dd
