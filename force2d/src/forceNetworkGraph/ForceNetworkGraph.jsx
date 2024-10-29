@@ -64,17 +64,14 @@ const ForceNetworkGraph = ({ nodes, links }) => {
       case 'Other':
         ctx.fillStyle = 'pink';
         break;
-      case 'X-linked':
-        ctx.fillStyle = 'brown';
-        break;
       case 'X-linked dominant':
         ctx.fillStyle = 'cyan';
         break;
       case 'X-linked recessive':
         ctx.fillStyle = 'magenta';
         break;
-      case 'XLR':
-        ctx.fillStyle = 'gray';
+      case '-':
+        ctx.fillStyle = 'gray'; // Color for "-"
         break;
       case 'KNOWN GENE':
         ctx.fillStyle = 'yellow'; // Color for circles (KNOWN GENE)

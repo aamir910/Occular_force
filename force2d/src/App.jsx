@@ -11,21 +11,19 @@ function App() {
   const [originalData, setOriginalData] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [checkedClasses, setCheckedClasses] = useState({
-    "Autosomal dominant": true,
     "Autosomal recessive": true,
-    Isolated: true,
+    "X-linked dominant": true,
+    "Other": true,
     "Isolated cases": true,
-    Mitochondrial: true,
-    Other: true,
-    "X-linked": false,
-    "X-linked dominant": false,
+    "Autosomal dominant": true,
     "X-linked recessive": true,
-    XLR: true,
-  
-  });
+    "Mitochondrial": true,
+    "-": true,
+    "Isolated": true
+});
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
-
+console.log(uniqueClasses , "uniqueClasses")
   const { Option } = Select;
 
   // Fetch Excel file on component mount
