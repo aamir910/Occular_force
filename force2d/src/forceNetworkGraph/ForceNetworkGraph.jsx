@@ -186,6 +186,10 @@ ${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
 
   return (
     <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: ' column' ,
       position: 'absolute',
       top: '50%',
       left: '50%',
