@@ -206,7 +206,7 @@ console.log(uniqueClasses , "uniqueClasses")
                 <div>
                   <Select
                     mode="multiple"
-                    placeholder="Select items"
+                    placeholder="Select disease"
                     style={{ minWidth: "200px" ,maxWidth: "300px"}}
                     onChange={handleSelectionChange}
                     value={selectedValues}
