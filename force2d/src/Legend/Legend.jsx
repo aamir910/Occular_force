@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Checkbox } from 'antd';
 
-const Legend = ({ checkedClasses, onClassChange }) => {
+const Legend = ({ checkedClasses, onClassChange, selectedValues }) => {
   const legendItems = [
     {
       group: 'Disease',
@@ -15,7 +15,6 @@ const Legend = ({ checkedClasses, onClassChange }) => {
         { shape: 'triangle', color: 'brown', label: 'X-linked', class: 'X-linked' },
         { shape: 'triangle', color: 'cyan', label: 'X-linked dominant', class: 'X-linked dominant' },
         { shape: 'triangle', color: 'magenta', label: 'X-linked recessive', class: 'X-linked recessive' },
-       
       ],
     },
     {
@@ -38,14 +37,27 @@ const Legend = ({ checkedClasses, onClassChange }) => {
     },
   ];
 
+  // Filter legendItems based on selectedValues
+  const filteredLegendItems = legendItems.map((group) => {
+    if (group.group === 'Disease') {
+      return {
+        ...group,
+        items: selectedValues.length === 0
+          ? group.items
+          : group.items.filter(item => selectedValues.includes(item.label))
+      };
+    }
+    return group;
+  });
+
   return (
     <Row>   
-      {legendItems.map((group, groupIndex) => (
+      {filteredLegendItems.map((group, groupIndex) => (
         <Col key={groupIndex} span={24} style={{ marginBottom: '2px' }}>
-          <dl style={{ margin: 0, padding: 0 }}> {/* Removed default margin/padding */}
-            <dt style={{ fontWeight: 'bold' ,  display: 'flex',
-                  alignItems: 'start',
-                  justifyContent: 'flex-start' ,fontSize:"15px" }}>{group.group}</dt> {/* Group label */}
+          <dl style={{ margin: 0, padding: 0 }}>
+            <dt style={{ fontWeight: 'bold', display: 'flex', alignItems: 'start', justifyContent: 'flex-start', fontSize: "15px" }}>
+              {group.group}
+            </dt>
             {group.items.map((item, index) => (
               <dd
                 key={index}
@@ -53,26 +65,24 @@ const Legend = ({ checkedClasses, onClassChange }) => {
                   marginBottom: '8px',
                   display: 'flex',
                   alignItems: 'start',
-                  justifyContent: 'flex-start' ,
-                  marginLeft: 0, // Ensure there's no left indentation
+                  justifyContent: 'flex-start',
+                  marginLeft: 0,
                 }}
               >
-                {/* Shape representation */}
                 {item.shape === 'triangle' && (
                   <>
                     <svg width="20" height="20" style={{ marginRight: '2px' }}>
                       <polygon points="10,0 0,20 20,20" fill={item.color} />
                     </svg>
-                    {/* Checkbox only for triangle */}
                     <Checkbox
-                      checked={checkedClasses[item.class]} // Check the checkbox based on the prop value
-                      onChange={(e) => onClassChange(item.class, e.target.checked)} // Trigger prop function on change
+                      checked={checkedClasses[item.class]}
+                      onChange={(e) => onClassChange(item.class, e.target.checked)}
                       style={{ marginLeft: '2px' }}
                     />
                   </>
                 )}
                 {item.shape === 'circle' && (
-                  <svg width="20" height="20" style={{ marginRight: '2px', marginTop:"5px" }}>
+                  <svg width="20" height="20" style={{ marginRight: '2px', marginTop: "5px" }}>
                     <circle cx="10" cy="10" r="10" fill={item.color} />
                   </svg>
                 )}
@@ -81,7 +91,6 @@ const Legend = ({ checkedClasses, onClassChange }) => {
                     <rect x="0" y="5" width="20" height="10" rx="5" ry="5" fill={item.color} />
                   </svg>
                 )}
-                {/* Label */}
                 <div style={{ marginLeft: '3px' }}>
                   {item.label}
                 </div>

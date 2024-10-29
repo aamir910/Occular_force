@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { Card, Select, Row, Col } from "antd";
 import ForceNetworkGraph from "./forceNetworkGraph/ForceNetworkGraph";
-import "./App.css";
 import Legend from "./Legend/Legend";
-import { Button } from "antd/es/radio";
+import { Button } from "antd";
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
+  
+  const [originalData, setOriginalData] = useState(null);
+  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [checkedClasses, setCheckedClasses] = useState({
     "Autosomal dominant": true,
     "Autosomal recessive": true,
@@ -15,23 +17,21 @@ function App() {
     "Isolated cases": true,
     Mitochondrial: true,
     Other: true,
-    "X-linked": true,
-    "X-linked dominant": true,
+    "X-linked": false,
+    "X-linked dominant": false,
     "X-linked recessive": true,
     XLR: true,
+  
   });
   const [uniqueClasses, setUniqueClasses] = useState([]);
+  const [selectedValues, setSelectedValues] = useState([]);
 
   const { Option } = Select;
 
+  // Fetch Excel file on component mount
   useEffect(() => {
     fetchExcelFile();
   }, []);
-
-  const handleSelectionChange = (value) => {
-    console.log("Selected values:", value);
-    // Handle selection logic here if needed
-  };
 
   const fetchExcelFile = async () => {
     try {
@@ -41,9 +41,9 @@ function App() {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      console.log(jsonData ,"jsonData jsonData jsonData")
       setJsonData(jsonData);
-      extractUniqueClasses(jsonData); // Extract unique classes after setting jsonData
+      extractUniqueClasses(jsonData);
+      setOriginalData(jsonData)  // Extract unique classes after setting jsonData
     } catch (error) {
       console.error("Error reading the Excel file:", error);
     }
@@ -69,12 +69,12 @@ function App() {
       const disorder = row.DISORDER;
       const knownGene = row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"];
       const repurposingCandidate = row["Repurposing candidate name"];
-      const approvedDrug = row["Approved_drug_name"];
+      const approvedDrug = row["Approved_drug_chembl_ID"];
       const classOfNode = row["MODE OF INHERITANCE"];
       const EFO_Ids_Mondo = row.EFO_Ids_Mondo;
       const ORPHanet_ID = row.ORPHanet_ID;
       const EYE_FINDING = row["EYE FINDING"];
-      const Repurposing_candidate_chembL_ID = row["Repurposing candidate chembL_ID"];
+      const Repurposing_chembL_ID = row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
 
       if (checkedClasses[classOfNode]) {
@@ -83,11 +83,11 @@ function App() {
             id: disorder,
             type: "DISORDER",
             class: classOfNode,
-            EFO_Ids_Mondo,
-            ORPHanet_ID,
-            EYE_FINDING,
-            Mode_of_inheritance: "",
-            Repurposing_candidate_chembL_ID: "",
+            EFO_Ids_Mondo: EFO_Ids_Mondo,
+            ORPHanet_ID: ORPHanet_ID,
+            EYE_FINDING: EYE_FINDING,
+            Modeofinheritance: "",
+            Repurposing_chembL_ID: "",
             Approved_drug_chembl_ID: "",
           });
         }
@@ -99,8 +99,8 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
-            Mode_of_inheritance: classOfNode,
-            Repurposing_candidate_chembL_ID: "",
+            Modeofinheritance: classOfNode,
+            Repurposing_chembL_ID: "",
             Approved_drug_chembl_ID: "",
           });
         }
@@ -112,9 +112,9 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
+            Modeofinheritance: "",
+            Repurposing_chembL_ID: Repurposing_chembL_ID,
             Approved_drug_chembl_ID: "",
-            Repurposing_candidate_chembL_ID,
-            Mode_of_inheritance: "",
           });
         }
         if (approvedDrug && !nodesMap.has(approvedDrug)) {
@@ -125,9 +125,7 @@ function App() {
             EFO_Ids_Mondo: "",
             ORPHanet_ID: "",
             EYE_FINDING: "",
-            Repurposing_candidate_chembL_ID: "",
-            Mode_of_inheritance: "",
-            Approved_drug_chembl_ID,
+            Approved_drug_chembl_ID: Approved_drug_chembl_ID,
           });
         }
 
@@ -154,9 +152,19 @@ function App() {
         }
       }
     });
+    return { nodes: Array.from(nodesMap.values()), links };
+  };
 
-    const uniqueNodes = Array.from(nodesMap.values());
-    return { nodes: uniqueNodes, links };
+  // Update graphData only when jsonData or checkedClasses change
+  useEffect(() => {
+    if (jsonData) {
+      const newGraphData = createNodesAndLinks(jsonData);
+      setGraphData(newGraphData);
+    }
+  }, [jsonData, checkedClasses]);
+
+  const handleSelectionChange = (value) => {
+    setSelectedValues(value);
   };
 
   const handleClassCheckboxChange = (className, checked) => {
@@ -166,65 +174,60 @@ function App() {
     }));
   };
 
-  const graphData = jsonData ? createNodesAndLinks(jsonData) : { nodes: [], links: [] };
+  const applyFilter = () => {
+    if (jsonData) {
+      if(selectedValues.length!==0){
+        const filtered = originalData.filter((row) => selectedValues.includes(row["MODE OF INHERITANCE"]));
+        setJsonData(filtered); 
+        console.log(selectedValues ,"selectedValues")
+      }
+      else{
+        setJsonData(originalData); 
+      }
+    }
+  };
+
+
 
   return (
-    <div className="app-container" style={{ padding: "2px" }}>
+    <div className="app-container" style={{ padding: "2px" , width:"100%"}}>
       <Row gutter={16}>
         {/* Legend with checkboxes */}
         <Col span={4}>
-          <Card
-            title="Legend"
-            bordered={true}
-            style={{
-              backgroundColor: "#ffffff",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              borderRadius: "8px",
-            }}
-          >
-            <Legend
-              checkedClasses={checkedClasses}
-              onClassChange={handleClassCheckboxChange}
-            />
+          <Card title="Legend" bordered style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}>
+            <Legend checkedClasses={checkedClasses} onClassChange={handleClassCheckboxChange} selectedValues={selectedValues} />
           </Card>
         </Col>
 
         {/* 2D Force Network Graph */}
-        <Col span={20}>
+        <Col span={19}>
           <Card
             title={
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Ocular Diseases Database</span>
                 <div>
-
-                <Select
-                  mode="multiple"
-                  placeholder="Select items"
-                  style={{ minWidth: "200px" }}
-                  onChange={handleSelectionChange}
-                >
-                  {uniqueClasses.map((className) => (
-                    <Option key={className} value={className}>
-                      {className}
-                    </Option>
-                  ))}
-                </Select>
-                <Button>Filter</Button>
+                  <Select
+                    mode="multiple"
+                    placeholder="Select items"
+                    style={{ minWidth: "200px" ,maxWidth: "300px"}}
+                    onChange={handleSelectionChange}
+                    value={selectedValues}
+                  >
+                    {uniqueClasses.map((className) => (
+                      <Option key={className} value={className}>
+                        {className}
+                      </Option>
+                    ))}
+                  </Select>
+                  <Button onClick={applyFilter}>Filter</Button>
                 </div>
               </div>
             }
-            bordered={true}
-            style={{
-              backgroundColor: "#ffffff",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              borderRadius: "8px",
-            }}
+            bordered
+            style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}
           >
             {graphData.nodes.length > 0 && graphData.links.length > 0 ? (
-              <ForceNetworkGraph
-                nodes={graphData.nodes}
-                links={graphData.links}
-              />
+              <ForceNetworkGraph nodes={graphData.nodes} links={graphData.links} />
             ) : (
               <p>No data in current filtration...</p>
             )}
