@@ -7,24 +7,24 @@ import { Button } from "antd";
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
-  
+
   const [originalData, setOriginalData] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [checkedClasses, setCheckedClasses] = useState({
     "Autosomal recessive": true,
     "X-linked dominant": true,
-    "Other": true,
+    Other: true,
     "Isolated cases": true,
     "Autosomal dominant": true,
     "X-linked recessive": true,
-    "Mitochondrial": true,
+    Mitochondrial: true,
     "-": true,
-    "Isolated": true
-});
+    Isolated: true,
+  });
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
   const [uniqueModes, setUniqueModes] = useState([]);
-console.log(uniqueClasses , "uniqueClasses")
+  console.log(uniqueClasses, "uniqueClasses");
   const { Option } = Select;
 
   // Fetch Excel file on component mount
@@ -42,7 +42,7 @@ console.log(uniqueClasses , "uniqueClasses")
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       setJsonData(jsonData);
       extractUniqueClasses(jsonData);
-      setOriginalData(jsonData)  // Extract unique classes after setting jsonData
+      setOriginalData(jsonData); // Extract unique classes after setting jsonData
     } catch (error) {
       console.error("Error reading the Excel file:", error);
     }
@@ -175,32 +175,44 @@ console.log(uniqueClasses , "uniqueClasses")
 
   const applyFilter = () => {
     if (jsonData) {
-      if(selectedValues.length!==0){
-        const filtered = originalData.filter((row) => selectedValues.includes(row["DISORDER"]));
+      if (selectedValues.length !== 0) {
+        const filtered = originalData.filter((row) =>
+          selectedValues.includes(row["DISORDER"])
+        );
         setJsonData(filtered);
         if (filtered.length > 0) {
           // Extract unique 'MODE OF INHERITANCE' values from filtered rows
-          const uniqueModesArray = [...new Set(filtered.map(row => row["MODE OF INHERITANCE"]))];
+          const uniqueModesArray = [
+            ...new Set(filtered.map((row) => row["MODE OF INHERITANCE"])),
+          ];
           setUniqueModes(uniqueModesArray);
         }
 
-        console.log(selectedValues ,"selectedValues")
-      }
-      else{
-        setJsonData(originalData); 
+        console.log(selectedValues, "selectedValues");
+      } else {
+        setJsonData(originalData);
       }
     }
   };
 
-
-
   return (
-    <div className="app-container" style={{ padding: "2px" , width:"100%"}}>
+    <div className="app-container" style={{ padding: "2px", width: "100%" }}>
       <Row gutter={16}>
         {/* Legend with checkboxes */}
         <Col span={4}>
-          <Card title="Legend" bordered style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}>
-            <Legend checkedClasses={checkedClasses} onClassChange={handleClassCheckboxChange} selectedValues={uniqueModes} />
+          <Card
+            title="Legend"
+            bordered
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            }}>
+            <Legend
+              checkedClasses={checkedClasses}
+              onClassChange={handleClassCheckboxChange}
+              selectedValues={uniqueModes}
+            />
           </Card>
         </Col>
 
@@ -208,31 +220,46 @@ console.log(uniqueClasses , "uniqueClasses")
         <Col span={19}>
           <Card
             title={
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}>
                 <span>Ocular Diseases Database</span>
                 <div>
                   <Select
                     mode="multiple"
                     placeholder="Select disease"
-                    style={{ minWidth: "200px" ,maxWidth: "300px"}}
+                    dropdownStyle={{ maxHeight: "300px", overflowY: "auto" }}
+                    style={{ minWidth: "200px", maxWidth: "300px" }}
                     onChange={handleSelectionChange}
                     value={selectedValues}
-                  >
+                    maxTagCount={5} // Adjust the number as needed
+                    allowClear
+                   >
                     {uniqueClasses.map((className) => (
                       <Option key={className} value={className}>
                         {className}
                       </Option>
                     ))}
+                    
                   </Select>
                   <Button onClick={applyFilter}>Filter</Button>
                 </div>
               </div>
             }
             bordered
-            style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}
-          >
+            style={{
+              backgroundColor: "#ffffff",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            }}>
             {graphData.nodes.length > 0 && graphData.links.length > 0 ? (
-              <ForceNetworkGraph nodes={graphData.nodes} links={graphData.links} />
+              <ForceNetworkGraph
+                nodes={graphData.nodes}
+                links={graphData.links}
+              />
             ) : (
               <p>No data in current filtration...</p>
             )}
