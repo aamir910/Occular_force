@@ -23,6 +23,7 @@ function App() {
 });
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
+  const [uniqueModes, setUniqueModes] = useState([]);
 console.log(uniqueClasses , "uniqueClasses")
   const { Option } = Select;
 
@@ -50,7 +51,7 @@ console.log(uniqueClasses , "uniqueClasses")
   const extractUniqueClasses = (data) => {
     const classes = new Set();
     data.forEach((row) => {
-      const classOfNode = row["MODE OF INHERITANCE"];
+      const classOfNode = row["DISORDER"];
       if (classOfNode) {
         classes.add(classOfNode);
       }
@@ -175,8 +176,14 @@ console.log(uniqueClasses , "uniqueClasses")
   const applyFilter = () => {
     if (jsonData) {
       if(selectedValues.length!==0){
-        const filtered = originalData.filter((row) => selectedValues.includes(row["MODE OF INHERITANCE"]));
-        setJsonData(filtered); 
+        const filtered = originalData.filter((row) => selectedValues.includes(row["DISORDER"]));
+        setJsonData(filtered);
+        if (filtered.length > 0) {
+          // Extract unique 'MODE OF INHERITANCE' values from filtered rows
+          const uniqueModesArray = [...new Set(filtered.map(row => row["MODE OF INHERITANCE"]))];
+          setUniqueModes(uniqueModesArray);
+        }
+
         console.log(selectedValues ,"selectedValues")
       }
       else{
@@ -193,7 +200,7 @@ console.log(uniqueClasses , "uniqueClasses")
         {/* Legend with checkboxes */}
         <Col span={4}>
           <Card title="Legend" bordered style={{ backgroundColor: "#ffffff", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", borderRadius: "8px" }}>
-            <Legend checkedClasses={checkedClasses} onClassChange={handleClassCheckboxChange} selectedValues={selectedValues} />
+            <Legend checkedClasses={checkedClasses} onClassChange={handleClassCheckboxChange} selectedValues={uniqueModes} />
           </Card>
         </Col>
 
