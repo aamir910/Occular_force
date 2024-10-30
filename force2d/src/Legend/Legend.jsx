@@ -14,7 +14,7 @@ const Legend = ({ checkedClasses, onClassChange, selectedValues }) => {
         { shape: 'triangle', color: 'pink', label: 'Other', class: 'Other' },
         { shape: 'triangle', color: 'cyan', label: 'X-linked dominant', class: 'X-linked dominant' },
         { shape: 'triangle', color: 'magenta', label: 'X-linked recessive', class: 'X-linked recessive' },
-        { shape: 'triangle', color: 'gray', label: '-', class: '-' }
+     
       ],
     },
     {

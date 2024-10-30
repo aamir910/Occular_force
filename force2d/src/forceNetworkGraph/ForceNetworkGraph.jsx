@@ -18,7 +18,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
       Mode_of_inheritance: node.Mode_of_inheritance , 
       Repurposing_candidate_chembL_ID: node.Repurposing_candidate_chembL_ID,
       Approved_drug_chembl_ID: node.Approved_drug_chembl_ID,
-
+     
     })),
     links: links.map(link => ({ source: link.source, target: link.target })),
   }), [nodes, links]);
