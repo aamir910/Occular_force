@@ -15,7 +15,7 @@ const ForceNetworkGraph = ({ nodes, links }) => {
       EFO_Ids_Mondo: node.EFO_Ids_Mondo,
       ORPHanet_ID: node.ORPHanet_ID,
       EYE_FINDING: node.EYE_FINDING , 
-      Mode_of_inheritance: node.Mode_of_inheritance , 
+      Mode_of_inheritance: node.Modeofinheritance , 
       Repurposing_candidate_chembL_ID: node.Repurposing_candidate_chembL_ID,
       Approved_drug_chembl_ID: node.Approved_drug_chembl_ID,
      
