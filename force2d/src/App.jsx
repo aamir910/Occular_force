@@ -68,12 +68,13 @@ function App() {
       const disorder = row.DISORDER;
       const knownGene = row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"];
       const repurposingCandidate = row["Repurposing candidate name"];
-       const approvedDrug = row["Approved_drug_name"];
+      const approvedDrug = row["Approved_drug_name"];
       const classOfNode = row["MODE OF INHERITANCE"];
       const EFO_Ids_Mondo = row.EFO_Ids_Mondo;
       const ORPHanet_ID = row.ORPHanet_ID;
       const EYE_FINDING = row["EYE FINDING"];
-      const Repurposing_candidate_chembL_ID = row["Repurposing candidate chembL_ID"];
+      const Repurposing_candidate_chembL_ID =
+        row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
 
       if (checkedClasses[classOfNode]) {
@@ -191,8 +192,7 @@ function App() {
         console.log(selectedValues, "selectedValues");
       } else {
         setJsonData(originalData);
-        setUniqueModes([])
-        
+        setUniqueModes([]);
       }
     }
   };
@@ -228,24 +228,22 @@ function App() {
                   justifyContent: "space-between",
                   alignItems: "center",
                 }}>
-                <span>Ocular Diseases Database</span>
+                <span>Inheritance based categorization</span>
                 <div>
                   <Select
                     mode="multiple"
                     placeholder="Select disease"
                     dropdownStyle={{ maxHeight: "300px", overflowY: "auto" }}
-                    style={{ minWidth: "200px", maxWidth: "300px" }}
+                    style={{ minWidth: "200px", maxWidth: "900px" }}
                     onChange={handleSelectionChange}
                     value={selectedValues}
-                    maxTagCount={5} // Adjust the number as needed
-                    allowClear
-                   >
+                    maxTagCount={2} // Adjust the number as needed
+                    allowClear>
                     {uniqueClasses.map((className) => (
                       <Option key={className} value={className}>
                         {className}
                       </Option>
                     ))}
-                    
                   </Select>
                   <Button onClick={applyFilter}>Filter</Button>
                 </div>

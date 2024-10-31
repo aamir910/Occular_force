@@ -9,7 +9,7 @@ const Legend = ({ checkedClasses, onClassChange, selectedValues }) => {
         { shape: 'triangle', color: 'red', label: 'Autosomal dominant', class: 'Autosomal dominant' },
         { shape: 'triangle', color: 'blue', label: 'Autosomal recessive', class: 'Autosomal recessive' },
         { shape: 'triangle', color: 'green', label: 'Isolated', class: 'Isolated' },
-        { shape: 'triangle', color: 'orange', label: 'Isolated cases', class: 'Isolated cases' },
+        // { shape: 'triangle', color: 'orange', label: 'Isolated cases', class: 'Isolated cases' },
         { shape: 'triangle', color: 'purple', label: 'Mitochondrial', class: 'Mitochondrial' },
         { shape: 'triangle', color: 'pink', label: 'Other', class: 'Other' },
         { shape: 'triangle', color: 'cyan', label: 'X-linked dominant', class: 'X-linked dominant' },
