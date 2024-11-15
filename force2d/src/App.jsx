@@ -20,6 +20,10 @@ function App() {
     Mitochondrial: true,
     "-": true,
     Isolated: true,
+    "KNOWN GENE":true , 
+    "Repurposing Candidate" : true ,
+    "Approved Drug" : true 
+
   });
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
@@ -77,7 +81,14 @@ function App() {
         row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
 
-      if (checkedClasses[classOfNode]) {
+     // Filter the row based on checked classes
+    //  if (!checkedClasses["KNOWN GENE"] && !knownGene) return; // Skip if class is checked but gene is missing
+    //  if (!checkedClasses["Repurposing Candidate"] && !repurposingCandidate) return; // Skip if class is checked but repurposing candidate is missing
+    //  if (!checkedClasses["Approved Drug"] && !approvedDrug) return; // Skip if class is checked but approved drug is missing
+ 
+  
+
+      if (checkedClasses[classOfNode]  ) {
         if (disorder && !nodesMap.has(disorder)) {
           nodesMap.set(disorder, {
             id: disorder,
@@ -214,6 +225,7 @@ function App() {
               checkedClasses={checkedClasses}
               onClassChange={handleClassCheckboxChange}
               selectedValues={uniqueModes}
+              setCheckedClasses ={setCheckedClasses}
             />
           </Card>
         </Col>
@@ -261,7 +273,7 @@ function App() {
                 links={graphData.links}
               />
             ) : (
-              <p>No data in current filtration...</p>
+              <p style={{ paddingRight:"45rem", width: "99%", overflow: "hidden" }}>No data in current filtration...</p>
             )}
           </Card>
         </Col>
