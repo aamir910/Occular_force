@@ -28,7 +28,7 @@ function App() {
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
   const [uniqueModes, setUniqueModes] = useState([]);
-  console.log(uniqueClasses, "uniqueClasses");
+  const [dropDowndata, SetDropDowndata] = useState([]);
   const { Option } = Select;
 
   // Fetch Excel file on component mount
@@ -68,6 +68,7 @@ function App() {
     const linksSet = new Set();
     const links = [];
 
+    const filteredRows = [];
     data.forEach((row) => {
       const disorder = row.DISORDER;
       const knownGene = row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"];
@@ -85,8 +86,15 @@ function App() {
     //  if (!checkedClasses["KNOWN GENE"] && !knownGene) return; // Skip if class is checked but gene is missing
     //  if (!checkedClasses["Repurposing Candidate"] && !repurposingCandidate) return; // Skip if class is checked but repurposing candidate is missing
     //  if (!checkedClasses["Approved Drug"] && !approvedDrug) return; // Skip if class is checked but approved drug is missing
- 
+    
+    if (checkedClasses[classOfNode]) {
+      filteredRows.push(row); // Add the entire row to the filteredRows array
+    }
+
   
+  // Update the state with the filtered rows
+  // SetDropDowndata(filteredRows);
+  extractUniqueClasses(filteredRows);
 
       if (checkedClasses[classOfNode]  ) {
         if (disorder && !nodesMap.has(disorder)) {
@@ -161,7 +169,8 @@ function App() {
             links.push({ source: knownGene, target: repurposingCandidate });
           }
         }
-      }
+      
+         }
     });
     return { nodes: Array.from(nodesMap.values()), links };
   };
@@ -171,6 +180,7 @@ function App() {
     if (jsonData) {
       const newGraphData = createNodesAndLinks(jsonData);
       setGraphData(newGraphData);
+      
     }
   }, [jsonData, checkedClasses]);
 
