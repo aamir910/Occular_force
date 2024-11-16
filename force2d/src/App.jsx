@@ -20,10 +20,9 @@ function App() {
     Mitochondrial: true,
     "-": true,
     Isolated: true,
-    "KNOWN GENE":true , 
-    "Repurposing Candidate" : true ,
-    "Approved Drug" : true 
-
+    "KNOWN GENE": true,
+    "Repurposing Candidate": true,
+    "Approved Drug": true,
   });
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
@@ -81,22 +80,37 @@ function App() {
       const Repurposing_candidate_chembL_ID =
         row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
+      console.log(!knownGene);
+      // Filter the row based on checked classes
+      if (!checkedClasses["KNOWN GENE"]) {
+        if (knownGene ||!knownGene === null || !knownGene === undefined) {
+          return; // Skip if class is checked but gene is missing
+        }
+      }
 
-     // Filter the row based on checked classes
-    //  if (!checkedClasses["KNOWN GENE"] && !knownGene) return; // Skip if class is checked but gene is missing
-    //  if (!checkedClasses["Repurposing Candidate"] && !repurposingCandidate) return; // Skip if class is checked but repurposing candidate is missing
-    //  if (!checkedClasses["Approved Drug"] && !approvedDrug) return; // Skip if class is checked but approved drug is missing
-    
-    if (checkedClasses[classOfNode]) {
-      filteredRows.push(row); // Add the entire row to the filteredRows array
-    }
+      if (!checkedClasses["Repurposing Candidate"]) {
+        if (repurposingCandidate) {
+          console.log(knownGene , "knownGene knownGeneknownGeneknownGeneknownGeneknownGene")
+          return; // Skip if class is checked but gene is missing
+        }
+      }
+      if (!checkedClasses["Approved Drug"]) {
+        if (approvedDrug) {
+          console.log(knownGene , "knownGene knownGeneknownGeneknownGeneknownGeneknownGene")
+          return; // Skip if class is checked but gene is missing
+        }
+      }
 
-  
-  // Update the state with the filtered rows
-  // SetDropDowndata(filteredRows);
-  extractUniqueClasses(filteredRows);
 
-      if (checkedClasses[classOfNode]  ) {
+      if (checkedClasses[classOfNode]) {
+        filteredRows.push(row); // Add the entire row to the filteredRows array
+      }
+
+      // Update the state with the filtered rows
+      // SetDropDowndata(filteredRows);
+      extractUniqueClasses(filteredRows);
+
+      if (checkedClasses[classOfNode]) {
         if (disorder && !nodesMap.has(disorder)) {
           nodesMap.set(disorder, {
             id: disorder,
@@ -110,7 +124,7 @@ function App() {
             Approved_drug_chembl_ID: "",
           });
         }
-        if (knownGene && !nodesMap.has(knownGene)) {
+        if (knownGene && !nodesMap.has(knownGene) ) {
           nodesMap.set(knownGene, {
             id: knownGene,
             type: "KNOWN GENE",
@@ -169,8 +183,7 @@ function App() {
             links.push({ source: knownGene, target: repurposingCandidate });
           }
         }
-      
-         }
+      }
     });
     return { nodes: Array.from(nodesMap.values()), links };
   };
@@ -180,7 +193,6 @@ function App() {
     if (jsonData) {
       const newGraphData = createNodesAndLinks(jsonData);
       setGraphData(newGraphData);
-      
     }
   }, [jsonData, checkedClasses]);
 
@@ -235,7 +247,7 @@ function App() {
               checkedClasses={checkedClasses}
               onClassChange={handleClassCheckboxChange}
               selectedValues={uniqueModes}
-              setCheckedClasses ={setCheckedClasses}
+              setCheckedClasses={setCheckedClasses}
             />
           </Card>
         </Col>
@@ -283,7 +295,14 @@ function App() {
                 links={graphData.links}
               />
             ) : (
-              <p style={{ paddingRight:"45rem", width: "99%", overflow: "hidden" }}>No data in current filtration...</p>
+              <p
+                style={{
+                  paddingRight: "45rem",
+                  width: "99%",
+                  overflow: "hidden",
+                }}>
+                No data in current filtration...
+              </p>
             )}
           </Card>
         </Col>

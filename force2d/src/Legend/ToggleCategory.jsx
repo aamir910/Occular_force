@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from 'antd';
 
 const ToggleCategory = ({ type, legendItems, checkedClasses, setCheckedClasses }) => {
   // Function to select all items in the specified type
