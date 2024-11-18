@@ -80,34 +80,15 @@ function App() {
       const Repurposing_candidate_chembL_ID =
         row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
-      console.log(!knownGene);
+
       // Filter the row based on checked classes
 
-
-
-      // if (!checkedClasses["KNOWN GENE"]) {
-      //   if (knownGene ||!knownGene === null || !knownGene === undefined) {
-      //     return; // Skip if class is checked but gene is missing
-      //   }
-      // }
-
-
-
-
-
+      //  logic to remvoe the Repurposing Candidate
       if (!checkedClasses["Repurposing Candidate"]) {
         if (repurposingCandidate) {
-          console.log(knownGene , "knownGene knownGeneknownGeneknownGeneknownGeneknownGene")
           return; // Skip if class is checked but gene is missing
         }
       }
-      if (!checkedClasses["Approved Drug"]) {
-        if (approvedDrug) {
-          console.log(knownGene , "knownGene knownGeneknownGeneknownGeneknownGeneknownGene")
-          return; // Skip if class is checked but gene is missing
-        }
-      }
-
 
       if (checkedClasses[classOfNode]) {
         filteredRows.push(row); // Add the entire row to the filteredRows array
@@ -118,7 +99,74 @@ function App() {
       extractUniqueClasses(filteredRows);
 
       if (checkedClasses[classOfNode]) {
-        if (disorder && !nodesMap.has(disorder)) {
+      
+if(!checkedClasses["KNOWN GENE"]){
+if(!knownGene){
+  console.log(knownGene , row , "knownGene is not here ") 
+  if (disorder && !nodesMap.has(disorder)) {
+    nodesMap.set(disorder, {
+      id: disorder,
+      type: "DISORDER",
+      class: classOfNode,
+      EFO_Ids_Mondo: EFO_Ids_Mondo,
+      ORPHanet_ID: ORPHanet_ID,
+      EYE_FINDING: EYE_FINDING,
+      Modeofinheritance: "",
+      Repurposing_candidate_chembL_ID: "",
+      Approved_drug_chembl_ID: "",
+      linkType: `${knownGene}`,
+    });
+  }
+}
+
+}
+        
+
+        // here is the logic of the approved drug there
+        if (checkedClasses["Approved Drug"]) {
+if(approvedDrug){
+
+  if (disorder && !nodesMap.has(disorder)) {
+    nodesMap.set(disorder, {
+      id: disorder,
+      type: "DISORDER",
+      class: classOfNode,
+      EFO_Ids_Mondo: EFO_Ids_Mondo,
+      ORPHanet_ID: ORPHanet_ID,
+      EYE_FINDING: EYE_FINDING,
+      Modeofinheritance: "",
+      Repurposing_candidate_chembL_ID: "",
+      Approved_drug_chembl_ID: "",
+      linkType: `${knownGene}`,
+    });
+  }
+}
+          if (approvedDrug && !nodesMap.has(approvedDrug)) {
+            nodesMap.set(approvedDrug, {
+              id: approvedDrug,
+              type: "Approved Drug",
+              class: "Approved Drug",
+              EFO_Ids_Mondo: "",
+              ORPHanet_ID: "",
+              EYE_FINDING: "",
+              Approved_drug_chembl_ID: Approved_drug_chembl_ID,
+            });
+          }
+
+          if (disorder && approvedDrug) {
+            const linkKey = `${disorder}-${approvedDrug}`;
+            if (!linksSet.has(linkKey)) {
+              linksSet.add(linkKey);
+              links.push({ source: disorder, target: approvedDrug });
+            }
+          }
+        }
+
+        // here is the logic of the known genes there
+
+        if (checkedClasses["KNOWN GENE"]) {
+
+if (disorder && !nodesMap.has(disorder)) {
           nodesMap.set(disorder, {
             id: disorder,
             type: "DISORDER",
@@ -129,55 +177,27 @@ function App() {
             Modeofinheritance: "",
             Repurposing_candidate_chembL_ID: "",
             Approved_drug_chembl_ID: "",
+            linkType: `${knownGene}`,
           });
         }
 
 
-      // if (!checkedClasses["KNOWN GENE"]) {
-      //   if (knownGene ||!knownGene === null || !knownGene === undefined) {
-      //     return; // Skip if class is checked but gene is missing
-      //   }
-      // }
 
-
-
-  
-        
-        if (repurposingCandidate && !nodesMap.has(repurposingCandidate)) {
-          nodesMap.set(repurposingCandidate, {
-            id: repurposingCandidate,
-            type: "Repurposing Candidate",
-            class: "Repurposing Candidate",
-            EFO_Ids_Mondo: "",
-            ORPHanet_ID: "",
-            EYE_FINDING: "",
-            Modeofinheritance: "",
-            Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
-            Approved_drug_chembl_ID: "",
-          });
-        }
-        if (approvedDrug && !nodesMap.has(approvedDrug)) {
-          nodesMap.set(approvedDrug, {
-            id: approvedDrug,
-            type: "Approved Drug",
-            class: "Approved Drug",
-            EFO_Ids_Mondo: "",
-            ORPHanet_ID: "",
-            EYE_FINDING: "",
-            Approved_drug_chembl_ID: Approved_drug_chembl_ID,
-          });
-        }
-        if (disorder && approvedDrug) {
-          const linkKey = `${disorder}-${approvedDrug}`;
-          if (!linksSet.has(linkKey)) {
-            linksSet.add(linkKey);
-            links.push({ source: disorder, target: approvedDrug });
+          if (repurposingCandidate && !nodesMap.has(repurposingCandidate)) {
+            nodesMap.set(repurposingCandidate, {
+              id: repurposingCandidate,
+              type: "Repurposing Candidate",
+              class: "Repurposing Candidate",
+              EFO_Ids_Mondo: "",
+              ORPHanet_ID: "",
+              EYE_FINDING: "",
+              Modeofinheritance: "",
+              Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
+              Approved_drug_chembl_ID: "",
+            });
           }
-        }
-// here is the logic of the known genes there 
-        if (checkedClasses["KNOWN GENE"]) {
-          
-          if (knownGene && !nodesMap.has(knownGene)  ) {
+
+          if (knownGene && !nodesMap.has(knownGene)) {
             nodesMap.set(knownGene, {
               id: knownGene,
               type: "KNOWN GENE",
@@ -189,9 +209,8 @@ function App() {
               Repurposing_candidate_chembL_ID: "",
               Approved_drug_chembl_ID: "",
             });
-  
           }
-  
+
           if (disorder && knownGene) {
             const linkKey = `${disorder}-${knownGene}`;
             if (!linksSet.has(linkKey)) {
@@ -206,22 +225,14 @@ function App() {
               linksSet.add(linkKey);
               links.push({ source: knownGene, target: repurposingCandidate });
             }
-
-  
           }
-  
-
         }
-
-        
-
-
-
       }
     });
+
     return { nodes: Array.from(nodesMap.values()), links };
   };
-
+  console.log(graphData, "graphdata is here ");
   // Update graphData only when jsonData or checkedClasses change
   useEffect(() => {
     if (jsonData) {
@@ -255,8 +266,6 @@ function App() {
           ];
           setUniqueModes(uniqueModesArray);
         }
-
-        console.log(selectedValues, "selectedValues");
       } else {
         setJsonData(originalData);
         setUniqueModes([]);
@@ -323,7 +332,7 @@ function App() {
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
               borderRadius: "8px",
             }}>
-            {graphData.nodes.length > 0 && graphData.links.length > 0 ? (
+            {graphData.nodes.length > 0 ? (
               <ForceNetworkGraph
                 nodes={graphData.nodes}
                 links={graphData.links}

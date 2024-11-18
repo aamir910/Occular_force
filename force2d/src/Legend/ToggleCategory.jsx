@@ -37,7 +37,7 @@ const ToggleCategory = ({ type, legendItems, checkedClasses, setCheckedClasses }
         }
       }}
     >
-             {allSelected ? "UnSelect all":"Select all"  }
+             {allSelected ? "Unselect all":"Select all"  }
     </a>
   );
 };
