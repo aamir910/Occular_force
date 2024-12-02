@@ -24,10 +24,12 @@ function App() {
     "Repurposing Candidate": true,
     "Approved Drug": true,
   });
+
+  const [expandedState, setExpandedState] = useState({});
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
   const [uniqueModes, setUniqueModes] = useState([]);
-  const [dropDowndata, SetDropDowndata] = useState([]);
+
   const { Option } = Select;
 
   // Fetch Excel file on component mount
@@ -66,7 +68,7 @@ function App() {
     const nodesMap = new Map();
     const linksSet = new Set();
     const links = [];
-
+    console.log("data", data);
     const filteredRows = [];
     data.forEach((row) => {
       const disorder = row.DISORDER;
@@ -80,6 +82,16 @@ function App() {
       const Repurposing_candidate_chembL_ID =
         row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
+      console.log(
+        expandedState[disorder],
+        'expandedState["Repurposing Candidate"][disorder]'
+      );
+
+      if (classOfNode && disorder && expandedState[disorder] !== undefined) {
+        if (!expandedState[disorder].visible) {
+          return;
+        }
+      }
 
       // Filter the row based on checked classes
 
@@ -99,48 +111,44 @@ function App() {
       extractUniqueClasses(filteredRows);
 
       if (checkedClasses[classOfNode]) {
-      
-if(!checkedClasses["KNOWN GENE"]){
-if(!knownGene){
-  console.log(knownGene , row , "knownGene is not here ") 
-  if (disorder && !nodesMap.has(disorder)) {
-    nodesMap.set(disorder, {
-      id: disorder,
-      type: "DISORDER",
-      class: classOfNode,
-      EFO_Ids_Mondo: EFO_Ids_Mondo,
-      ORPHanet_ID: ORPHanet_ID,
-      EYE_FINDING: EYE_FINDING,
-      Modeofinheritance: "",
-      Repurposing_candidate_chembL_ID: "",
-      Approved_drug_chembl_ID: "",
-      linkType: `${knownGene}`,
-    });
-  }
-}
-
-}
-        
+        if (!checkedClasses["KNOWN GENE"]) {
+          if (!knownGene) {
+            console.log(knownGene, row, "knownGene is not here ");
+            if (disorder && !nodesMap.has(disorder)) {
+              nodesMap.set(disorder, {
+                id: disorder,
+                type: "DISORDER",
+                class: classOfNode,
+                EFO_Ids_Mondo: EFO_Ids_Mondo,
+                ORPHanet_ID: ORPHanet_ID,
+                EYE_FINDING: EYE_FINDING,
+                Modeofinheritance: "",
+                Repurposing_candidate_chembL_ID: "",
+                Approved_drug_chembl_ID: "",
+                linkType: `${knownGene}`,
+              });
+            }
+          }
+        }
 
         // here is the logic of the approved drug there
         if (checkedClasses["Approved Drug"]) {
-if(approvedDrug){
-
-  if (disorder && !nodesMap.has(disorder)) {
-    nodesMap.set(disorder, {
-      id: disorder,
-      type: "DISORDER",
-      class: classOfNode,
-      EFO_Ids_Mondo: EFO_Ids_Mondo,
-      ORPHanet_ID: ORPHanet_ID,
-      EYE_FINDING: EYE_FINDING,
-      Modeofinheritance: "",
-      Repurposing_candidate_chembL_ID: "",
-      Approved_drug_chembl_ID: "",
-      linkType: `${knownGene}`,
-    });
-  }
-}
+          if (approvedDrug) {
+            if (disorder && !nodesMap.has(disorder)) {
+              nodesMap.set(disorder, {
+                id: disorder,
+                type: "DISORDER",
+                class: classOfNode,
+                EFO_Ids_Mondo: EFO_Ids_Mondo,
+                ORPHanet_ID: ORPHanet_ID,
+                EYE_FINDING: EYE_FINDING,
+                Modeofinheritance: "",
+                Repurposing_candidate_chembL_ID: "",
+                Approved_drug_chembl_ID: "",
+                linkType: `${knownGene}`,
+              });
+            }
+          }
           if (approvedDrug && !nodesMap.has(approvedDrug)) {
             nodesMap.set(approvedDrug, {
               id: approvedDrug,
@@ -165,23 +173,20 @@ if(approvedDrug){
         // here is the logic of the known genes there
 
         if (checkedClasses["KNOWN GENE"]) {
-
-if (disorder && !nodesMap.has(disorder)) {
-          nodesMap.set(disorder, {
-            id: disorder,
-            type: "DISORDER",
-            class: classOfNode,
-            EFO_Ids_Mondo: EFO_Ids_Mondo,
-            ORPHanet_ID: ORPHanet_ID,
-            EYE_FINDING: EYE_FINDING,
-            Modeofinheritance: "",
-            Repurposing_candidate_chembL_ID: "",
-            Approved_drug_chembl_ID: "",
-            linkType: `${knownGene}`,
-          });
-        }
-
-
+          if (disorder && !nodesMap.has(disorder)) {
+            nodesMap.set(disorder, {
+              id: disorder,
+              type: "DISORDER",
+              class: classOfNode,
+              EFO_Ids_Mondo: EFO_Ids_Mondo,
+              ORPHanet_ID: ORPHanet_ID,
+              EYE_FINDING: EYE_FINDING,
+              Modeofinheritance: "",
+              Repurposing_candidate_chembL_ID: "",
+              Approved_drug_chembl_ID: "",
+              linkType: `${knownGene}`,
+            });
+          }
 
           if (repurposingCandidate && !nodesMap.has(repurposingCandidate)) {
             nodesMap.set(repurposingCandidate, {
@@ -238,8 +243,31 @@ if (disorder && !nodesMap.has(disorder)) {
     if (jsonData) {
       const newGraphData = createNodesAndLinks(jsonData);
       setGraphData(newGraphData);
+
+      console.log(newGraphData, "newGraphData");
+
+      const initialState = newGraphData.nodes
+        .filter((item) => item.type === "DISORDER") // Filter for nodes with type "DISORDER"
+        .reduce((acc, item) => {
+          acc[item.id] = {
+            visible: true, // Visibility flag
+            label: item.class, // Store the label
+          };
+          return acc;
+        }, {});
+
+      setExpandedState(initialState);
     }
   }, [jsonData, checkedClasses]);
+
+  useEffect(() => {
+    if (jsonData) {
+      const newGraphData = createNodesAndLinks(jsonData);
+      setGraphData(newGraphData);
+
+      console.log(newGraphData, "newGraphData");
+    }
+  }, [jsonData, expandedState]);
 
   const handleSelectionChange = (value) => {
     setSelectedValues(value);
@@ -291,6 +319,8 @@ if (disorder && !nodesMap.has(disorder)) {
               onClassChange={handleClassCheckboxChange}
               selectedValues={uniqueModes}
               setCheckedClasses={setCheckedClasses}
+              expandedState={expandedState}
+              setExpandedState={setExpandedState}
             />
           </Card>
         </Col>
@@ -306,7 +336,7 @@ if (disorder && !nodesMap.has(disorder)) {
                   alignItems: "center",
                 }}>
                 <span>Inheritance based categorization</span>
-                <div>
+                {/* <div>
                   <Select
                     mode="multiple"
                     placeholder="Select disease"
@@ -323,7 +353,7 @@ if (disorder && !nodesMap.has(disorder)) {
                     ))}
                   </Select>
                   <Button onClick={applyFilter}>Filter</Button>
-                </div>
+                </div> */}
               </div>
             }
             bordered

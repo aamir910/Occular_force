@@ -153,9 +153,13 @@
           if (['EFO_Ids_Mondo'].includes(record.property)) {
             return <a href={`https://monarchinitiative.org/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
           }
-          else if (['ORPHanet_ID', 'Mode_of_inheritance', 'Repurposing_candidate_chembL_ID', 'Approved_drug_chembl_ID'].includes(record.property)){
+          else if (['ORPHanet_ID', 'Mode_of_inheritance'].includes(record.property)){
             const id = text.split(":")[1];
             return <a href={`https://www.orpha.net/en/disease/detail/${id}?name=Orphanet:782${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
+          }
+          else if ([ 'Repurposing_candidate_chembL_ID', 'Approved_drug_chembl_ID'  ].includes(record.property)){
+
+            return <a href={`https://www.ebi.ac.uk/chembl/explore/compound/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
           }
           return text;
         }
