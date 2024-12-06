@@ -122,9 +122,9 @@
           nodeRelSize={10}
           enableZoomInteraction={true}
           onNodeClick={handleNodeClick} // Handle node click
-          nodeLabel={(node) => {
-            return `<div style="background-color: black; color: white; padding: 5px; border-radius: 4px;">${node.id}</div>`;
-          }}
+          // nodeLabel={(node) => {
+          //   return `<div style="background-color: black; color: white; padding: 5px; border-radius: 4px;">${node.id}</div>`;
+          // }}
         />
         {selectedNode && <DataTable node={selectedNode} onClose={() => setSelectedNode(null)} />}
       </div>
