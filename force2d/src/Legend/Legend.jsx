@@ -167,19 +167,24 @@ const Legend = ({
 
                   {/* Shapes (Triangle, Circle, Capsule) */}
                   {item.shape === "triangle" && (
+                     <div style={{margin:"5px"}}>
                     <svg width="20" height="20" style={{ marginRight: "2px" }}>
                       <polygon points="10,0 0,20 20,20" fill={item.color} />
                     </svg>
+                    </div>
                   )}
                   {item.shape === "circle" && (
+                     <div style={{margin:"5px"}}>
                     <svg
                       width="20"
                       height="20"
                       style={{ marginRight: "2px", marginTop: "5px" }}>
                       <circle cx="10" cy="10" r="10" fill={item.color} />
                     </svg>
+                    </div>
                   )}
                   {item.shape === "capsule" && (
+                     <div style={{margin:"5px"}}>
                     <svg width="20" height="20" style={{ marginRight: "2px" }}>
                       <rect
                         x="0"
@@ -191,6 +196,7 @@ const Legend = ({
                         fill={item.color}
                       />
                     </svg>
+                    </div>
                   )}
 
                   {/* Parent Checkbox */}
