@@ -305,7 +305,7 @@ function App() {
     <div className="app-container" style={{ padding: "2px", width: "100%" }}>
       <Row gutter={16}>
         {/* Legend with checkboxes */}
-        <Col span={4}>
+        <Col span={5}>
           <Card
             title="Legend"
             bordered
@@ -326,7 +326,7 @@ function App() {
         </Col>
 
         {/* 2D Force Network Graph */}
-        <Col span={19}>
+        <Col span={18}>
           <Card
             title={
               <div
