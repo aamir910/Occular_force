@@ -1,6 +1,6 @@
   import React, { useRef, useEffect, useMemo, useState } from 'react';
   import { ForceGraph2D } from 'react-force-graph';
-  import { Table, Button } from 'antd'; // Ant Design components
+  import {Spin ,Table, Button } from 'antd'; // Ant Design components
 
   const ForceNetworkGraph = ({ nodes, links }) => {
     const graphRef = useRef();
@@ -136,6 +136,8 @@
   const DataTable = ({ node, onClose }) => {
     console.log(node);
   
+    const [imageLoading, setImageLoading] = useState(true); // State to track image loading
+
     // Define the columns for the Ant Design table
     const columns = [
       { 
@@ -157,8 +159,7 @@
             const id = text.split(":")[1];
             return <a href={`https://www.orpha.net/en/disease/detail/${id}?name=Orphanet:782${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
           }
-          else if ([ 'Repurposing_candidate_chembL_ID', 'Approved_drug_chembl_ID'  ].includes(record.property)){
-
+          else if ([ 'Repurposing_candidate_chembL_ID', 'Approved_drug_chembl_ID' ].includes(record.property)){
             return <a href={`https://www.ebi.ac.uk/chembl/explore/compound/${text}`} target="_blank" rel="noopener noreferrer">{text}</a>;
           }
           return text;
@@ -166,8 +167,8 @@
       },
     ];
   
-    // Conditionally add data based on the node.group value
     let dataSource = [];
+    let imageUrl = null;
   
     if (node.group === "KNOWN GENE") {
       dataSource = [
@@ -177,12 +178,13 @@
       dataSource = [
         { key: 'Repurposing_candidate_chembL_ID', property: 'Repurposing_candidate_chembL_ID', value: node.Repurposing_candidate_chembL_ID },
       ];
+      imageUrl = `https://www.ebi.ac.uk/chembl/api/data/image/${node.Repurposing_candidate_chembL_ID}`;
     } else if (node.group === "Approved Drug") {
       dataSource = [
         { key: 'Approved_drug_chembl_ID', property: 'Approved_drug_chembl_ID', value: node.Approved_drug_chembl_ID },
       ];
+      imageUrl = `https://www.ebi.ac.uk/chembl/api/data/image/${node.Approved_drug_chembl_ID}`;
     } else {
-      // Default properties if no specific group matches
       dataSource = [
         { key: 'EFO_Ids_Mondo', property: 'EFO_Ids_Mondo', value: node.EFO_Ids_Mondo },
         { key: 'ORPHanet_ID', property: 'ORPHanet_ID', value: node.ORPHanet_ID },
@@ -205,14 +207,33 @@
         borderRadius: 5,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
         zIndex: 10,
-        width: 400
+        width: 400,
+        overflowY: 'auto'
       }}>
         <h2>{node.id}</h2>
         <Table columns={columns} dataSource={dataSource} pagination={false} />
+        {imageUrl && (
+          <div style={{ marginTop: '10px', textAlign: 'center' }}>
+            {imageLoading && <Spin tip="Loading image..." />}
+            <img 
+              src={imageUrl} 
+              alt={`${node.group} chemical structure`} 
+              style={{ 
+                maxWidth: '100%', 
+                display: imageLoading ? 'none' : 'block' // Hide image until loaded
+              }} 
+              onLoad={() => setImageLoading(false)} // Set loading to false when image loads
+              onError={(e) => { 
+                e.target.style.display = 'none'; // Hide image if it fails
+                setImageLoading(false); // Stop loading spinner if error occurs
+              }}
+            />
+          </div>
+        )}
         <Button type="primary" onClick={onClose} style={{ marginTop: '10px' }}>Close</Button>
       </div>
     );
-  };
+};
   
 
   export default ForceNetworkGraph;
