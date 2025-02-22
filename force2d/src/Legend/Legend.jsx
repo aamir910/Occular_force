@@ -254,49 +254,50 @@ const Legend = ({
                       </div>
 
                       <ul
-                        style={{
-                          marginTop: "2px",
-                          maxHeight: "300px",
-                          overflowY: "auto",
-                          border: "1px solid #d9d9d9",
-                          borderRadius: "5px",
-                          maxWidth: "250px",
-                          scrollbarWidth: "thin",
-                        }}
-                      >
-                        {Object.entries(expandedState)
-                          .filter(([id, details]) => {
-                            const currentQuery = searchQueries[item.class] || "";
-                            return (
-                              details.label === item.label &&
-                              id.toLowerCase().includes(currentQuery)
-                            );
-                          })
-                          .map(([id, details]) => (
-                            <li
-                              key={id}
-                              style={{
-                                listStyle: "none",
-                                borderBottom: "1px solid #e8e8e8",
-                              }}
-                            >
-                              <Checkbox
-                                checked={details.visible}
-                                onChange={(e) => {
-                                  setExpandedState((prev) => ({
-                                    ...prev,
-                                    [id]: {
-                                      ...prev[id],
-                                      visible: e.target.checked,
-                                    },
-                                  }));
-                                }}
-                              >
-                                {id}
-                              </Checkbox>
-                            </li>
-                          ))}
-                      </ul>
+  style={{
+    marginTop: "2px",
+    maxHeight: "300px",
+    overflowY: "auto",
+    border: "1px solid #d9d9d9",
+    borderRadius: "5px",
+    maxWidth: "250px",
+    scrollbarWidth: "thin",
+  }}
+>
+  {Object.entries(expandedState)
+    .filter(([id, details]) => {
+      const currentQuery = searchQueries[item.class] || "";
+      return (
+        details.label === item.label &&
+        id.toLowerCase().includes(currentQuery)
+      );
+    })
+    .sort(([idA], [idB]) => idA.localeCompare(idB))
+    .map(([id, details]) => (
+      <li
+        key={id}
+        style={{
+          listStyle: "none",
+          borderBottom: "1px solid #e8e8e8",
+        }}
+      >
+        <Checkbox
+          checked={details.visible}
+          onChange={(e) => {
+            setExpandedState((prev) => ({
+              ...prev,
+              [id]: {
+                ...prev[id],
+                visible: e.target.checked,
+              },
+            }));
+          }}
+        >
+          {id}
+        </Checkbox>
+      </li>
+    ))}
+</ul>
                     </div>
                   </div>
                 )}
