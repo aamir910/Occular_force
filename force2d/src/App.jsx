@@ -369,7 +369,7 @@ function App() {
               >
                 <span>Inheritance based categorization</span>
                 <Button type="primary" onClick={handleOpenBox}>
-                  Exports
+                  Export
                 </Button>
               </div>
             }
