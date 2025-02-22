@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Row, Col, Checkbox, Input } from "antd";
+import { Row, Col, Checkbox, Input, Button } from "antd";
 import ToggleCategory from "./ToggleCategory";
 
 const Legend = ({
@@ -9,6 +9,7 @@ const Legend = ({
   selectedValues,
   setCheckedClasses,
   setExpandedState,
+  onFilterData, // New prop to pass filtered data to parent
 }) => {
   const [expandedClasses, setExpandedClasses] = useState({});
   const [searchQueries, setSearchQueries] = useState({});
@@ -17,66 +18,21 @@ const Legend = ({
     {
       group: "Disease",
       items: [
-        {
-          shape: "triangle",
-          color: "red",
-          label: "Autosomal dominant",
-          class: "Autosomal dominant",
-        },
-        {
-          shape: "triangle",
-          color: "blue",
-          label: "Autosomal recessive",
-          class: "Autosomal recessive",
-        },
-        {
-          shape: "triangle",
-          color: "green",
-          label: "Isolated",
-          class: "Isolated",
-        },
-        {
-          shape: "triangle",
-          color: "purple",
-          label: "Mitochondrial",
-          class: "Mitochondrial",
-        },
+        { shape: "triangle", color: "red", label: "Autosomal dominant", class: "Autosomal dominant" },
+        { shape: "triangle", color: "blue", label: "Autosomal recessive", class: "Autosomal recessive" },
+        { shape: "triangle", color: "green", label: "Isolated", class: "Isolated" },
+        { shape: "triangle", color: "purple", label: "Mitochondrial", class: "Mitochondrial" },
         { shape: "triangle", color: "pink", label: "Other", class: "Other" },
-        {
-          shape: "triangle",
-          color: "cyan",
-          label: "X-linked dominant",
-          class: "X-linked dominant",
-        },
-        {
-          shape: "triangle",
-          color: "magenta",
-          label: "X-linked recessive",
-          class: "X-linked recessive",
-        },
+        { shape: "triangle", color: "cyan", label: "X-linked dominant", class: "X-linked dominant" },
+        { shape: "triangle", color: "magenta", label: "X-linked recessive", class: "X-linked recessive" },
       ],
     },
     {
       group: "",
       items: [
-        {
-          shape: "circle",
-          color: "yellow",
-          label: "Known Gene",
-          class: "KNOWN GENE",
-        },
-        {
-          shape: "capsule",
-          color: "blue",
-          label: "Repurposing candidates",
-          class: "Repurposing Candidate",
-        },
-        {
-          shape: "capsule",
-          color: "green",
-          label: "Approved drugs",
-          class: "Approved Drug",
-        },
+        { shape: "circle", color: "yellow", label: "Known Gene", class: "KNOWN GENE" },
+        { shape: "capsule", color: "blue", label: "Repurposing candidates", class: "Repurposing Candidate" },
+        { shape: "capsule", color: "green", label: "Approved drugs", class: "Approved Drug" },
       ],
     },
   ];
@@ -88,13 +44,43 @@ const Legend = ({
     }));
   };
 
+  // Function to handle filtering when the button is clicked
+  const handleFilterData = () => {
+    const selectedClasses = Object.entries(checkedClasses)
+      .filter(([_, checked]) => checked)
+      .map(([className]) => className);
+
+    const selectedExpandedItems = Object.entries(expandedState)
+      .filter(([_, details]) => details.visible)
+      .map(([id]) => id);
+
+    // Pass the filtered data to the parent component
+    onFilterData({
+      selectedClasses,
+      selectedExpandedItems,
+    });
+  };
+
   return (
-    <Row style={{ 
-      maxHeight: "100vh", 
-      overflowY: "auto",
-      scrollbarWidth: "thin",
-      scrollbarColor: "#888 #f1f1f1" 
-    }}>
+    <Row
+      style={{
+        maxHeight: "100vh",
+        overflowY: "auto",
+        scrollbarWidth: "thin",
+        scrollbarColor: "#888 #f1f1f1",
+      }}
+    >
+      {/* Filter Button at the Top */}
+      <Col span={24} style={{ marginBottom: "10px" }}>
+        <Button
+          type="primary"
+          onClick={handleFilterData}
+          style={{ width: "100%", maxWidth: "250px" }}
+        >
+          Filter Data
+        </Button>
+      </Col>
+
       {legendItems.map((group, groupIndex) => (
         <Col
           key={groupIndex}
@@ -124,7 +110,7 @@ const Legend = ({
                 )}
               </div>
             </dt>
-            
+
             {group.items.map((item, index) => (
               <dd
                 key={index}
@@ -187,7 +173,7 @@ const Legend = ({
 
                   <Checkbox
                     checked={checkedClasses[item.class]}
-                    onChange={(e) => onClassChange(item.class, e.target.checked)}
+                    onChange={(e) => onClassChange(item.class, e.target.checked)} // Only update state, no filtering
                     style={{ marginLeft: "2px" }}
                   />
                   <div style={{ marginLeft: "3px" }}>{item.label}</div>
@@ -201,9 +187,9 @@ const Legend = ({
                         style={{ marginBottom: "10px", maxWidth: "250px" }}
                         value={searchQueries[item.class] || ""}
                         onChange={(e) => {
-                          setSearchQueries(prev => ({
+                          setSearchQueries((prev) => ({
                             ...prev,
-                            [item.class]: e.target.value.toLowerCase()
+                            [item.class]: e.target.value.toLowerCase(),
                           }));
                         }}
                       />
@@ -221,12 +207,12 @@ const Legend = ({
                           onClick={() => {
                             const currentQuery = searchQueries[item.class] || "";
                             const filteredItems = Object.entries(expandedState)
-                              .filter(([id, details]) => 
+                              .filter(([id, details]) =>
                                 details.label === item.label &&
                                 id.toLowerCase().includes(currentQuery)
                               );
 
-                            setExpandedState(prev => {
+                            setExpandedState((prev) => {
                               const newState = { ...prev };
                               filteredItems.forEach(([id]) => {
                                 newState[id] = { ...newState[id], visible: true };
@@ -249,12 +235,12 @@ const Legend = ({
                           onClick={() => {
                             const currentQuery = searchQueries[item.class] || "";
                             const filteredItems = Object.entries(expandedState)
-                              .filter(([id, details]) => 
+                              .filter(([id, details]) =>
                                 details.label === item.label &&
                                 id.toLowerCase().includes(currentQuery)
                               );
 
-                            setExpandedState(prev => {
+                            setExpandedState((prev) => {
                               const newState = { ...prev };
                               filteredItems.forEach(([id]) => {
                                 newState[id] = { ...newState[id], visible: false };
@@ -297,12 +283,12 @@ const Legend = ({
                               <Checkbox
                                 checked={details.visible}
                                 onChange={(e) => {
-                                  setExpandedState(prev => ({
+                                  setExpandedState((prev) => ({
                                     ...prev,
                                     [id]: {
                                       ...prev[id],
-                                      visible: e.target.checked
-                                    }
+                                      visible: e.target.checked,
+                                    },
                                   }));
                                 }}
                               >

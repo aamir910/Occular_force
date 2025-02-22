@@ -88,18 +88,15 @@ function App() {
         }
       }
 
-      // Filter based on checkedClasses
       if (checkedClasses[classOfNode]) {
         filteredRows.push(row); // Add row to filteredRows for export
       }
 
       if (checkedClasses[classOfNode]) {
-        // Skip if Repurposing Candidate is unchecked and exists
         if (!checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
           return;
         }
 
-        // Disorder Node
         if (disorder && !nodesMap.has(disorder)) {
           nodesMap.set(disorder, {
             id: disorder,
@@ -115,7 +112,6 @@ function App() {
           });
         }
 
-        // Known Gene Logic
         if (checkedClasses["KNOWN GENE"] && knownGene) {
           if (!nodesMap.has(knownGene)) {
             nodesMap.set(knownGene, {
@@ -139,7 +135,6 @@ function App() {
           }
         }
 
-        // Repurposing Candidate Logic
         if (checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
           if (!nodesMap.has(repurposingCandidate)) {
             nodesMap.set(repurposingCandidate, {
@@ -163,7 +158,6 @@ function App() {
           }
         }
 
-        // Approved Drug Logic
         if (checkedClasses["Approved Drug"] && approvedDrug) {
           if (!nodesMap.has(approvedDrug)) {
             nodesMap.set(approvedDrug, {
@@ -207,24 +201,48 @@ function App() {
 
       setExpandedState(initialState);
     }
-  }, [jsonData, checkedClasses]);
-
-  useEffect(() => {
-    if (jsonData) {
-      const newGraphData = createNodesAndLinks(jsonData);
-      setGraphData(newGraphData);
-    }
-  }, [jsonData, expandedState]);
-
-  const handleSelectionChange = (value) => {
-    setSelectedValues(value);
-  };
+  }, [jsonData]);
 
   const handleClassCheckboxChange = (className, checked) => {
     setCheckedClasses((prevCheckedClasses) => ({
       ...prevCheckedClasses,
       [className]: checked,
     }));
+  };
+
+  // New function to handle filter data from Legend
+  const handleFilterData = ({ selectedClasses, selectedExpandedItems }) => {
+    if (jsonData) {
+      const filteredData = jsonData.filter((row) => {
+        const classOfNode = row["MODE OF INHERITANCE"];
+        const disorder = row.DISORDER;
+        const hasRepurposingCandidate = !!row["Repurposing candidate name"];
+
+        // Check if the class is selected
+        if (!selectedClasses.includes(classOfNode)) {
+          return false;
+        }
+
+        // If repurposing candidate is unchecked, exclude rows with repurposing candidates
+        if (!selectedClasses.includes("Repurposing Candidate") && hasRepurposingCandidate) {
+          return false;
+        }
+
+        // Check expanded state visibility
+        if (disorder && expandedState[disorder] !== undefined) {
+          return selectedExpandedItems.includes(disorder);
+        }
+
+        return true;
+      });
+
+      const newGraphData = createNodesAndLinks(filteredData);
+      setGraphData(newGraphData);
+    }
+  };
+
+  const handleSelectionChange = (value) => {
+    setSelectedValues(value);
   };
 
   const applyFilter = () => {
@@ -317,6 +335,7 @@ function App() {
               setCheckedClasses={setCheckedClasses}
               expandedState={expandedState}
               setExpandedState={setExpandedState}
+              onFilterData={handleFilterData} // Pass the filter handler
             />
           </Card>
         </Col>
@@ -385,4 +404,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
