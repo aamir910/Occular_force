@@ -75,7 +75,7 @@ const Legend = ({
         <Button
           type="primary"
           onClick={handleFilterData}
-          style={{ width: "100%", maxWidth: "250px" }}
+          style={{ width: "70%", maxWidth: "250px" }}
         >
           Filter Data
         </Button>
