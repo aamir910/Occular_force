@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Card, Select, Row, Col } from "antd";
+import { Card, Select, Row, Col, Button, Modal } from "antd";
+import html2canvas from "html2canvas";
 import ForceNetworkGraph from "./forceNetworkGraph/ForceNetworkGraph";
 import Legend from "./Legend/Legend";
-import { Button } from "antd";
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
-
   const [originalData, setOriginalData] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [checkedClasses, setCheckedClasses] = useState({
@@ -29,10 +28,10 @@ function App() {
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
   const [uniqueModes, setUniqueModes] = useState([]);
-
+  const [isBoxOpen, setIsBoxOpen] = useState(false);
+  const rowRef = useRef(null);
   const { Option } = Select;
 
-  // Fetch Excel file on component mount
   useEffect(() => {
     fetchExcelFile();
   }, []);
@@ -45,9 +44,10 @@ function App() {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      console.log(jsonData, "jsonData");
       setJsonData(jsonData);
       extractUniqueClasses(jsonData);
-      setOriginalData(jsonData); // Extract unique classes after setting jsonData
+      setOriginalData(jsonData);
     } catch (error) {
       console.error("Error reading the Excel file:", error);
     }
@@ -68,8 +68,8 @@ function App() {
     const nodesMap = new Map();
     const linksSet = new Set();
     const links = [];
-    console.log("data", data);
     const filteredRows = [];
+
     data.forEach((row) => {
       const disorder = row.DISORDER;
       const knownGene = row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"];
@@ -79,13 +79,8 @@ function App() {
       const EFO_Ids_Mondo = row.EFO_Ids_Mondo;
       const ORPHanet_ID = row.ORPHanet_ID;
       const EYE_FINDING = row["EYE FINDING"];
-      const Repurposing_candidate_chembL_ID =
-        row["Repurposing candidate chembL_ID"];
+      const Repurposing_candidate_chembL_ID = row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
-      console.log(
-        expandedState[disorder],
-        'expandedState["Repurposing Candidate"][disorder]'
-      );
 
       if (classOfNode && disorder && expandedState[disorder] !== undefined) {
         if (!expandedState[disorder].visible) {
@@ -93,116 +88,36 @@ function App() {
         }
       }
 
-      // Filter the row based on checked classes
-
-      //  logic to remvoe the Repurposing Candidate
-      if (!checkedClasses["Repurposing Candidate"]) {
-        if (repurposingCandidate) {
-          return; // Skip if class is checked but gene is missing
-        }
+      // Filter based on checkedClasses
+      if (checkedClasses[classOfNode]) {
+        filteredRows.push(row); // Add row to filteredRows for export
       }
 
       if (checkedClasses[classOfNode]) {
-        filteredRows.push(row); // Add the entire row to the filteredRows array
-      }
-
-      // Update the state with the filtered rows
-      // SetDropDowndata(filteredRows);
-      extractUniqueClasses(filteredRows);
-
-      if (checkedClasses[classOfNode]) {
-        if (!checkedClasses["KNOWN GENE"]) {
-          if (!knownGene) {
-            console.log(knownGene, row, "knownGene is not here ");
-            if (disorder && !nodesMap.has(disorder)) {
-              nodesMap.set(disorder, {
-                id: disorder,
-                type: "DISORDER",
-                class: classOfNode,
-                EFO_Ids_Mondo: EFO_Ids_Mondo,
-                ORPHanet_ID: ORPHanet_ID,
-                EYE_FINDING: EYE_FINDING,
-                Modeofinheritance: "",
-                Repurposing_candidate_chembL_ID: "",
-                Approved_drug_chembl_ID: "",
-                linkType: `${knownGene}`,
-              });
-            }
-          }
+        // Skip if Repurposing Candidate is unchecked and exists
+        if (!checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
+          return;
         }
 
-        // here is the logic of the approved drug there
-        if (checkedClasses["Approved Drug"]) {
-          if (approvedDrug) {
-            if (disorder && !nodesMap.has(disorder)) {
-              nodesMap.set(disorder, {
-                id: disorder,
-                type: "DISORDER",
-                class: classOfNode,
-                EFO_Ids_Mondo: EFO_Ids_Mondo,
-                ORPHanet_ID: ORPHanet_ID,
-                EYE_FINDING: EYE_FINDING,
-                Modeofinheritance: "",
-                Repurposing_candidate_chembL_ID: "",
-                Approved_drug_chembl_ID: "",
-                linkType: `${knownGene}`,
-              });
-            }
-          }
-          if (approvedDrug && !nodesMap.has(approvedDrug)) {
-            nodesMap.set(approvedDrug, {
-              id: approvedDrug,
-              type: "Approved Drug",
-              class: "Approved Drug",
-              EFO_Ids_Mondo: "",
-              ORPHanet_ID: "",
-              EYE_FINDING: "",
-              Approved_drug_chembl_ID: Approved_drug_chembl_ID,
-            });
-          }
-
-          if (disorder && approvedDrug) {
-            const linkKey = `${disorder}-${approvedDrug}`;
-            if (!linksSet.has(linkKey)) {
-              linksSet.add(linkKey);
-              links.push({ source: disorder, target: approvedDrug });
-            }
-          }
+        // Disorder Node
+        if (disorder && !nodesMap.has(disorder)) {
+          nodesMap.set(disorder, {
+            id: disorder,
+            type: "DISORDER",
+            class: classOfNode,
+            EFO_Ids_Mondo: EFO_Ids_Mondo,
+            ORPHanet_ID: ORPHanet_ID,
+            EYE_FINDING: EYE_FINDING,
+            Modeofinheritance: "",
+            Repurposing_candidate_chembL_ID: "",
+            Approved_drug_chembl_ID: "",
+            linkType: `${knownGene}`,
+          });
         }
 
-        // here is the logic of the known genes there
-
-        if (checkedClasses["KNOWN GENE"]) {
-          if (disorder && !nodesMap.has(disorder)) {
-            nodesMap.set(disorder, {
-              id: disorder,
-              type: "DISORDER",
-              class: classOfNode,
-              EFO_Ids_Mondo: EFO_Ids_Mondo,
-              ORPHanet_ID: ORPHanet_ID,
-              EYE_FINDING: EYE_FINDING,
-              Modeofinheritance: "",
-              Repurposing_candidate_chembL_ID: "",
-              Approved_drug_chembl_ID: "",
-              linkType: `${knownGene}`,
-            });
-          }
-
-          if (repurposingCandidate && !nodesMap.has(repurposingCandidate)) {
-            nodesMap.set(repurposingCandidate, {
-              id: repurposingCandidate,
-              type: "Repurposing Candidate",
-              class: "Repurposing Candidate",
-              EFO_Ids_Mondo: "",
-              ORPHanet_ID: "",
-              EYE_FINDING: "",
-              Modeofinheritance: "",
-              Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
-              Approved_drug_chembl_ID: "",
-            });
-          }
-
-          if (knownGene && !nodesMap.has(knownGene)) {
+        // Known Gene Logic
+        if (checkedClasses["KNOWN GENE"] && knownGene) {
+          if (!nodesMap.has(knownGene)) {
             nodesMap.set(knownGene, {
               id: knownGene,
               type: "KNOWN GENE",
@@ -215,7 +130,6 @@ function App() {
               Approved_drug_chembl_ID: "",
             });
           }
-
           if (disorder && knownGene) {
             const linkKey = `${disorder}-${knownGene}`;
             if (!linksSet.has(linkKey)) {
@@ -223,7 +137,23 @@ function App() {
               links.push({ source: disorder, target: knownGene });
             }
           }
+        }
 
+        // Repurposing Candidate Logic
+        if (checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
+          if (!nodesMap.has(repurposingCandidate)) {
+            nodesMap.set(repurposingCandidate, {
+              id: repurposingCandidate,
+              type: "Repurposing Candidate",
+              class: "Repurposing Candidate",
+              EFO_Ids_Mondo: "",
+              ORPHanet_ID: "",
+              EYE_FINDING: "",
+              Modeofinheritance: "",
+              Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
+              Approved_drug_chembl_ID: "",
+            });
+          }
           if (knownGene && repurposingCandidate) {
             const linkKey = `${knownGene}-${repurposingCandidate}`;
             if (!linksSet.has(linkKey)) {
@@ -232,26 +162,45 @@ function App() {
             }
           }
         }
+
+        // Approved Drug Logic
+        if (checkedClasses["Approved Drug"] && approvedDrug) {
+          if (!nodesMap.has(approvedDrug)) {
+            nodesMap.set(approvedDrug, {
+              id: approvedDrug,
+              type: "Approved Drug",
+              class: "Approved Drug",
+              EFO_Ids_Mondo: "",
+              ORPHanet_ID: "",
+              EYE_FINDING: "",
+              Approved_drug_chembl_ID: Approved_drug_chembl_ID,
+            });
+          }
+          if (disorder && approvedDrug) {
+            const linkKey = `${disorder}-${approvedDrug}`;
+            if (!linksSet.has(linkKey)) {
+              linksSet.add(linkKey);
+              links.push({ source: disorder, target: approvedDrug });
+            }
+          }
+        }
       }
     });
 
     return { nodes: Array.from(nodesMap.values()), links };
   };
-  console.log(graphData, "graphdata is here ");
-  // Update graphData only when jsonData or checkedClasses change
+
   useEffect(() => {
     if (jsonData) {
       const newGraphData = createNodesAndLinks(jsonData);
       setGraphData(newGraphData);
 
-      console.log(newGraphData, "newGraphData");
-
       const initialState = newGraphData.nodes
-        .filter((item) => item.type === "DISORDER") // Filter for nodes with type "DISORDER"
+        .filter((item) => item.type === "DISORDER")
         .reduce((acc, item) => {
           acc[item.id] = {
-            visible: true, // Visibility flag
-            label: item.class, // Store the label
+            visible: true,
+            label: item.class,
           };
           return acc;
         }, {});
@@ -264,8 +213,6 @@ function App() {
     if (jsonData) {
       const newGraphData = createNodesAndLinks(jsonData);
       setGraphData(newGraphData);
-
-      console.log(newGraphData, "newGraphData");
     }
   }, [jsonData, expandedState]);
 
@@ -288,7 +235,6 @@ function App() {
         );
         setJsonData(filtered);
         if (filtered.length > 0) {
-          // Extract unique 'MODE OF INHERITANCE' values from filtered rows
           const uniqueModesArray = [
             ...new Set(filtered.map((row) => row["MODE OF INHERITANCE"])),
           ];
@@ -301,10 +247,59 @@ function App() {
     }
   };
 
+  const handleOpenBox = () => {
+    setIsBoxOpen(true);
+  };
+
+  const handleCloseBox = () => {
+    setIsBoxOpen(false);
+  };
+
+  const exportToExcel = () => {
+    if (jsonData) {
+      const filteredData = jsonData.filter((row) => {
+        const classOfNode = row["MODE OF INHERITANCE"];
+        if (checkedClasses[classOfNode]) {
+          if (
+            !checkedClasses["Repurposing Candidate"] &&
+            row["Repurposing candidate name"]
+          ) {
+            return false;
+          }
+          return true;
+        }
+        return false;
+      });
+
+      if (filteredData.length > 0) {
+        const worksheet = XLSX.utils.json_to_sheet(filteredData);
+        const book = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(book, worksheet, "Filtered_Inheritance");
+        XLSX.writeFile(book, "Filtered_Inheritance_data.xlsx");
+      } else {
+        console.log("No filtered data to export.");
+      }
+    } else {
+      console.log("No data available to export.");
+    }
+  };
+
+  const takeScreenshot = async () => {
+    if (rowRef.current) {
+      const canvas = await html2canvas(rowRef.current);
+      const dataURL = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = "graph_screenshot.png";
+      link.href = dataURL;
+      link.click();
+    } else {
+      console.log("Row element not found.");
+    }
+  };
+
   return (
     <div className="app-container" style={{ padding: "2px", width: "100%" }}>
-      <Row gutter={16}>
-        {/* Legend with checkboxes */}
+      <Row gutter={16} ref={rowRef}>
         <Col span={5}>
           <Card
             title="Legend"
@@ -313,7 +308,8 @@ function App() {
               backgroundColor: "#ffffff",
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
               borderRadius: "8px",
-            }}>
+            }}
+          >
             <Legend
               checkedClasses={checkedClasses}
               onClassChange={handleClassCheckboxChange}
@@ -325,7 +321,6 @@ function App() {
           </Card>
         </Col>
 
-        {/* 2D Force Network Graph */}
         <Col span={18}>
           <Card
             title={
@@ -334,26 +329,12 @@ function App() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                }}>
+                }}
+              >
                 <span>Inheritance based categorization</span>
-                {/* <div>
-                  <Select
-                    mode="multiple"
-                    placeholder="Select disease"
-                    dropdownStyle={{ maxHeight: "300px", overflowY: "auto" }}
-                    style={{ minWidth: "200px", maxWidth: "900px" }}
-                    onChange={handleSelectionChange}
-                    value={selectedValues}
-                    maxTagCount={2} // Adjust the number as needed
-                    allowClear>
-                    {uniqueClasses.map((className) => (
-                      <Option key={className} value={className}>
-                        {className}
-                      </Option>
-                    ))}
-                  </Select>
-                  <Button onClick={applyFilter}>Filter</Button>
-                </div> */}
+                <Button type="primary" onClick={handleOpenBox}>
+                  Exports
+                </Button>
               </div>
             }
             bordered
@@ -361,7 +342,8 @@ function App() {
               backgroundColor: "#ffffff",
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
               borderRadius: "8px",
-            }}>
+            }}
+          >
             {graphData.nodes.length > 0 ? (
               <ForceNetworkGraph
                 nodes={graphData.nodes}
@@ -373,13 +355,32 @@ function App() {
                   paddingRight: "45rem",
                   width: "99%",
                   overflow: "hidden",
-                }}>
+                }}
+              >
                 No data in current filtration...
               </p>
             )}
           </Card>
         </Col>
       </Row>
+
+      <Modal
+        title="Additional Actions"
+        open={isBoxOpen}
+        onCancel={handleCloseBox}
+        footer={null}
+      >
+        <Button type="primary" onClick={exportToExcel}>
+          Export to Excel
+        </Button>
+        <Button
+          type="primary"
+          style={{ marginLeft: "10px" }}
+          onClick={takeScreenshot}
+        >
+          Take Screenshot
+        </Button>
+      </Modal>
     </div>
   );
 }
