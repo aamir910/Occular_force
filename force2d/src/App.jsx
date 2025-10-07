@@ -270,34 +270,49 @@ function App() {
     setIsBoxOpen(false);
   };
 
-  const exportToExcel = () => {
-    if (jsonData) {
-      const filteredData = jsonData.filter((row) => {
-        const classOfNode = row["MODE OF INHERITANCE"];
-        if (checkedClasses[classOfNode]) {
-          if (
-            !checkedClasses["Repurposing Candidate"] &&
-            row["Repurposing candidate name"]
-          ) {
-            return false;
-          }
-          return true;
-        }
-        return false;
-      });
+ const exportToExcel = () => {
+  if (jsonData) {
+    const selectedClasses = Object.entries(checkedClasses)
+      .filter(([_, checked]) => checked)
+      .map(([className]) => className);
 
-      if (filteredData.length > 0) {
-        const worksheet = XLSX.utils.json_to_sheet(filteredData);
-        const book = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(book, worksheet, "Filtered_Inheritance");
-        XLSX.writeFile(book, "Filtered_Inheritance_data.xlsx");
-      } else {
-        console.log("No filtered data to export.");
+    const selectedExpandedItems = Object.entries(expandedState)
+      .filter(([_, details]) => details.visible)
+      .map(([id]) => id);
+
+    const filteredData = jsonData.filter((row) => {
+      const classOfNode = row["MODE OF INHERITANCE"];
+      const disorder = row.DISORDER;
+      const hasRepurposingCandidate = !!row["Repurposing candidate name"];
+
+      if (!selectedClasses.includes(classOfNode)) {
+        return false;
       }
+
+      if (!selectedClasses.includes("Repurposing Candidate") && hasRepurposingCandidate) {
+        return false;
+      }
+
+      if (disorder && expandedState[disorder] !== undefined) {
+        return selectedExpandedItems.includes(disorder);
+      }
+
+      return true;
+    });
+
+    if (filteredData.length > 0) {
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const book = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(book, worksheet, "Filtered_Inheritance");
+      XLSX.writeFile(book, "Filtered_Inheritance_data.xlsx");
     } else {
-      console.log("No data available to export.");
+      console.log("No filtered data to export.");
     }
-  };
+  } else {
+    console.log("No data available to export.");
+  }
+};
+
 
   const exportGraphImage = async (format) => {
     if (rowRef.current) {
