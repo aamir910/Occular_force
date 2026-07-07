@@ -8,22 +8,22 @@ const ToggleCategory = ({
   expandedState,
   setExpandedState,
 }) => {
-  // Function to select all items in the specified type (both main and expanded)
   const handleSelectAll = () => {
     const updatedClasses = { ...checkedClasses };
     const categoryItems = legendItems.find((group) => group.group === type)?.items || [];
 
-    // Update main category checkboxes
     categoryItems.forEach((item) => {
       updatedClasses[item.class] = true;
     });
     setCheckedClasses(updatedClasses);
 
-    // Update expanded items
     if (expandedState && setExpandedState) {
       const updatedExpandedState = { ...expandedState };
       Object.entries(updatedExpandedState).forEach(([id, details]) => {
-        if (categoryItems.some((item) => item.label === details.label)) {
+        const belongsToCategory = categoryItems.some(
+          (item) => String(item.class) === String(details.label)
+        );
+        if (belongsToCategory) {
           updatedExpandedState[id] = { ...details, visible: true };
         }
       });
@@ -31,22 +31,22 @@ const ToggleCategory = ({
     }
   };
 
-  // Function to unselect all items in the specified type (both main and expanded)
   const handleUnselectAll = () => {
     const updatedClasses = { ...checkedClasses };
     const categoryItems = legendItems.find((group) => group.group === type)?.items || [];
 
-    // Update main category checkboxes
     categoryItems.forEach((item) => {
       updatedClasses[item.class] = false;
     });
     setCheckedClasses(updatedClasses);
 
-    // Update expanded items
     if (expandedState && setExpandedState) {
       const updatedExpandedState = { ...expandedState };
       Object.entries(updatedExpandedState).forEach(([id, details]) => {
-        if (categoryItems.some((item) => item.label === details.label)) {
+        const belongsToCategory = categoryItems.some(
+          (item) => String(item.class) === String(details.label)
+        );
+        if (belongsToCategory) {
           updatedExpandedState[id] = { ...details, visible: false };
         }
       });
@@ -54,7 +54,6 @@ const ToggleCategory = ({
     }
   };
 
-  // Check if all main items in this category are selected
   const allSelected = legendItems
     .find((group) => group.group === type)
     ?.items.every((item) => checkedClasses[item.class]);

@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { Card, Select, Row, Col, Button, Modal } from "antd";
 import html2canvas from "html2canvas";
-import { saveAs } from 'file-saver'; // Added for SVG export
+import { saveAs } from "file-saver";
 import ForceNetworkGraph from "./forceNetworkGraph/ForceNetworkGraph";
 import Legend from "./Legend/Legend";
+
+const DEFAULT_SELECTED_DISORDERS = ["Cone-rod dystrophy", "Cone dystrophy"];
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
@@ -27,10 +29,10 @@ function App() {
 
   const [expandedState, setExpandedState] = useState({});
   const [uniqueClasses, setUniqueClasses] = useState([]);
-  const [selectedValues, setSelectedValues] = useState([]);
-  const [uniqueModes, setUniqueModes] = useState([]);
+  const [selectedDisorders, setSelectedDisorders] = useState(DEFAULT_SELECTED_DISORDERS);
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const rowRef = useRef(null);
+  const hasInitialFilterApplied = useRef(false);
   const { Option } = Select;
 
   useEffect(() => {
@@ -62,14 +64,37 @@ function App() {
         classes.add(classOfNode);
       }
     });
-    setUniqueClasses(Array.from(classes));
+    setUniqueClasses(Array.from(classes).sort((a, b) => a.localeCompare(b)));
+    setSelectedDisorders((prev) => {
+      const validDefaults = DEFAULT_SELECTED_DISORDERS.filter((disorder) => classes.has(disorder));
+      if (validDefaults.length > 0) {
+        return validDefaults;
+      }
+      return prev;
+    });
+  };
+
+  const buildExpandedStateFromData = (data) => {
+    const initialState = {};
+
+    data.forEach((row) => {
+      const disorder = row.DISORDER;
+      if (disorder && !initialState[disorder]) {
+        initialState[disorder] = {
+          visible: true,
+          label: row["MODE OF INHERITANCE"],
+          type: "DISORDER",
+        };
+      }
+    });
+
+    return initialState;
   };
 
   const createNodesAndLinks = (data) => {
     const nodesMap = new Map();
     const linksSet = new Set();
     const links = [];
-    const filteredRows = [];
 
     data.forEach((row) => {
       const disorder = row.DISORDER;
@@ -87,10 +112,6 @@ function App() {
         if (!expandedState[disorder].visible) {
           return;
         }
-      }
-
-      if (checkedClasses[classOfNode]) {
-        filteredRows.push(row); // Add row to filteredRows for export
       }
 
       if (checkedClasses[classOfNode]) {
@@ -187,22 +208,16 @@ function App() {
 
   useEffect(() => {
     if (jsonData) {
-      const newGraphData = createNodesAndLinks(jsonData);
-      setGraphData(newGraphData);
-
-      const initialState = newGraphData.nodes
-        .filter((item) => item.type === "DISORDER")
-        .reduce((acc, item) => {
-          acc[item.id] = {
-            visible: true,
-            label: item.class,
-          };
-          return acc;
-        }, {});
-
-      setExpandedState(initialState);
+      const scopedRows =
+        selectedDisorders.length > 0
+          ? jsonData.filter((row) => selectedDisorders.includes(row.DISORDER))
+          : [];
+      setExpandedState(buildExpandedStateFromData(scopedRows));
+      if (hasInitialFilterApplied.current) {
+        setGraphData({ nodes: [], links: [] });
+      }
     }
-  }, [jsonData]);
+  }, [jsonData, selectedDisorders]);
 
   const handleClassCheckboxChange = (className, checked) => {
     setCheckedClasses((prevCheckedClasses) => ({
@@ -211,8 +226,99 @@ function App() {
     }));
   };
 
-  const handleFilterData = ({ selectedClasses, selectedExpandedItems }) => {
+  const handleFilterData = useCallback(
+    ({ selectedClasses, selectedExpandedItems }) => {
+      if (jsonData) {
+        if (selectedDisorders.length === 0) {
+          setGraphData({ nodes: [], links: [] });
+          return;
+        }
+
+        const filteredData = jsonData.filter((row) => {
+          const classOfNode = row["MODE OF INHERITANCE"];
+          const disorder = row.DISORDER;
+          const hasRepurposingCandidate = !!row["Repurposing candidate name"];
+
+          if (!selectedDisorders.includes(disorder)) {
+            return false;
+          }
+
+          if (!selectedClasses.includes(classOfNode)) {
+            return false;
+          }
+
+          if (!selectedClasses.includes("Repurposing Candidate") && hasRepurposingCandidate) {
+            return false;
+          }
+
+          if (disorder && expandedState[disorder] !== undefined) {
+            return selectedExpandedItems.includes(disorder);
+          }
+
+          return true;
+        });
+
+        const newGraphData = createNodesAndLinks(filteredData);
+        setGraphData(newGraphData);
+      }
+    },
+    [jsonData, selectedDisorders, expandedState, checkedClasses]
+  );
+
+  const applyFilters = useCallback(() => {
+    const selectedClasses = Object.entries(checkedClasses)
+      .filter(([, checked]) => checked)
+      .map(([className]) => className);
+
+    const selectedExpandedItems = Object.entries(expandedState)
+      .filter(([id, details]) => {
+        if (!details.visible) {
+          return false;
+        }
+        if (details.type === "DISORDER") {
+          return selectedDisorders.includes(id);
+        }
+        return true;
+      })
+      .map(([id]) => id);
+
+    handleFilterData({ selectedClasses, selectedExpandedItems });
+  }, [checkedClasses, expandedState, selectedDisorders, handleFilterData]);
+
+  useEffect(() => {
+    if (
+      jsonData &&
+      selectedDisorders.length > 0 &&
+      Object.keys(expandedState).length > 0 &&
+      !hasInitialFilterApplied.current
+    ) {
+      hasInitialFilterApplied.current = true;
+      applyFilters();
+    }
+  }, [jsonData, selectedDisorders, expandedState, applyFilters]);
+
+  const handleDisorderSelectionChange = (value) => {
+    setSelectedDisorders(value);
+  };
+
+  const handleOpenBox = () => {
+    setIsBoxOpen(true);
+  };
+
+  const handleCloseBox = () => {
+    setIsBoxOpen(false);
+  };
+
+  const exportToExcel = () => {
     if (jsonData) {
+      const selectedClasses = Object.entries(checkedClasses)
+        .filter(([_, checked]) => checked)
+        .map(([className]) => className);
+
+      const selectedExpandedItems = Object.entries(expandedState)
+        .filter(([_, details]) => details.visible)
+        .map(([id]) => id);
+
       const filteredData = jsonData.filter((row) => {
         const classOfNode = row["MODE OF INHERITANCE"];
         const disorder = row.DISORDER;
@@ -233,112 +339,45 @@ function App() {
         return true;
       });
 
-      const newGraphData = createNodesAndLinks(filteredData);
-      setGraphData(newGraphData);
-    }
-  };
-
-  const handleSelectionChange = (value) => {
-    setSelectedValues(value);
-  };
-
-  const applyFilter = () => {
-    if (jsonData) {
-      if (selectedValues.length !== 0) {
-        const filtered = originalData.filter((row) =>
-          selectedValues.includes(row["DISORDER"])
-        );
-        setJsonData(filtered);
-        if (filtered.length > 0) {
-          const uniqueModesArray = [
-            ...new Set(filtered.map((row) => row["MODE OF INHERITANCE"])),
-          ];
-          setUniqueModes(uniqueModesArray);
-        }
+      if (filteredData.length > 0) {
+        const worksheet = XLSX.utils.json_to_sheet(filteredData);
+        const book = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(book, worksheet, "Filtered_Inheritance");
+        XLSX.writeFile(book, "Filtered_Inheritance_data.xlsx");
       } else {
-        setJsonData(originalData);
-        setUniqueModes([]);
+        console.log("No filtered data to export.");
       }
-    }
-  };
-
-  const handleOpenBox = () => {
-    setIsBoxOpen(true);
-  };
-
-  const handleCloseBox = () => {
-    setIsBoxOpen(false);
-  };
-
- const exportToExcel = () => {
-  if (jsonData) {
-    const selectedClasses = Object.entries(checkedClasses)
-      .filter(([_, checked]) => checked)
-      .map(([className]) => className);
-
-    const selectedExpandedItems = Object.entries(expandedState)
-      .filter(([_, details]) => details.visible)
-      .map(([id]) => id);
-
-    const filteredData = jsonData.filter((row) => {
-      const classOfNode = row["MODE OF INHERITANCE"];
-      const disorder = row.DISORDER;
-      const hasRepurposingCandidate = !!row["Repurposing candidate name"];
-
-      if (!selectedClasses.includes(classOfNode)) {
-        return false;
-      }
-
-      if (!selectedClasses.includes("Repurposing Candidate") && hasRepurposingCandidate) {
-        return false;
-      }
-
-      if (disorder && expandedState[disorder] !== undefined) {
-        return selectedExpandedItems.includes(disorder);
-      }
-
-      return true;
-    });
-
-    if (filteredData.length > 0) {
-      const worksheet = XLSX.utils.json_to_sheet(filteredData);
-      const book = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(book, worksheet, "Filtered_Inheritance");
-      XLSX.writeFile(book, "Filtered_Inheritance_data.xlsx");
     } else {
-      console.log("No filtered data to export.");
+      console.log("No data available to export.");
     }
-  } else {
-    console.log("No data available to export.");
-  }
-};
-
+  };
 
   const exportGraphImage = async (format) => {
     if (rowRef.current) {
       const canvas = await html2canvas(rowRef.current);
       let filename, dataURL;
-      
-      switch(format) {
-        case 'png':
-          filename = 'graph_screenshot.png';
-          dataURL = canvas.toDataURL('image/png');
+
+      switch (format) {
+        case "png":
+          filename = "graph_screenshot.png";
+          dataURL = canvas.toDataURL("image/png");
           break;
-        case 'jpg':
-          filename = 'graph_screenshot.jpg';
-          dataURL = canvas.toDataURL('image/jpeg');
+        case "jpg":
+          filename = "graph_screenshot.jpg";
+          dataURL = canvas.toDataURL("image/jpeg");
           break;
-        case 'svg':
-          filename = 'graph_screenshot.svg';
-          const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}"><image width="${canvas.width}" height="${canvas.height}" href="${canvas.toDataURL('image/png')}"/></svg>`;
-          const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        case "svg": {
+          filename = "graph_screenshot.svg";
+          const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}"><image width="${canvas.width}" height="${canvas.height}" href="${canvas.toDataURL("image/png")}"/></svg>`;
+          const blob = new Blob([svgData], { type: "image/svg+xml" });
           saveAs(blob, filename);
           return;
+        }
         default:
           return;
       }
-      
-      const link = document.createElement('a');
+
+      const link = document.createElement("a");
       link.download = filename;
       link.href = dataURL;
       link.click();
@@ -350,9 +389,9 @@ function App() {
   return (
     <div className="app-container" style={{ padding: "2px", width: "100%" }}>
       <Row gutter={16} ref={rowRef}>
-        <Col span={5}>
+        <Col span={5} style={{ minWidth: "16%" }}>
           <Card
-            title="Legend"
+            title="Legend Filters"
             bordered
             style={{
               backgroundColor: "#ffffff",
@@ -363,16 +402,16 @@ function App() {
             <Legend
               checkedClasses={checkedClasses}
               onClassChange={handleClassCheckboxChange}
-              selectedValues={uniqueModes}
               setCheckedClasses={setCheckedClasses}
               expandedState={expandedState}
               setExpandedState={setExpandedState}
-              onFilterData={handleFilterData}
+              selectedDisorders={selectedDisorders}
+              jsonData={jsonData}
             />
           </Card>
         </Col>
 
-        <Col span={18}>
+        <Col span={18} style={{ minWidth: "65%" }}>
           <Card
             title={
               <div
@@ -395,11 +434,43 @@ function App() {
               borderRadius: "8px",
             }}
           >
+            <div style={{ marginBottom: "16px" }}>
+              <label
+                htmlFor="disorder-filter"
+                style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
+              >
+                Filter by Disorder Name
+              </label>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <Select
+                  id="disorder-filter"
+                  mode="multiple"
+                  showSearch
+                  allowClear
+                  placeholder="Select one or more disorders"
+                  value={selectedDisorders}
+                  onChange={handleDisorderSelectionChange}
+                  optionFilterProp="children"
+                  style={{ flex: 1 }}
+                >
+                  {uniqueClasses.map((disorder) => (
+                    <Option key={disorder} value={disorder}>
+                      {disorder}
+                    </Option>
+                  ))}
+                </Select>
+                <Button
+                  type="primary"
+                  onClick={applyFilters}
+                  disabled={selectedDisorders.length === 0}
+                >
+                  Filter Data
+                </Button>
+              </div>
+            </div>
+
             {graphData.nodes.length > 0 ? (
-              <ForceNetworkGraph
-                nodes={graphData.nodes}
-                links={graphData.links}
-              />
+              <ForceNetworkGraph nodes={graphData.nodes} links={graphData.links} />
             ) : (
               <p
                 style={{
@@ -408,56 +479,46 @@ function App() {
                   overflow: "hidden",
                 }}
               >
-                No data in current filtration...
+                Select disorders and click Filter Data to view the graph.
               </p>
             )}
           </Card>
         </Col>
       </Row>
 
-      <Modal
-        title="Export Options"
-        open={isBoxOpen}
-        onCancel={handleCloseBox}
-        footer={null}
-      >
-        <div 
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '10px',
-            alignItems: 'center'
+      <Modal title="Export Options" open={isBoxOpen} onCancel={handleCloseBox} footer={null}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            alignItems: "center",
           }}
         >
-          <Button 
-            type="primary" 
-            size="small"
-            style={{ width: '150px' }}
-            onClick={exportToExcel}
-          >
+          <Button type="primary" size="small" style={{ width: "150px" }} onClick={exportToExcel}>
             Export to Excel
           </Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="small"
-            style={{ width: '150px' }}
-            onClick={() => exportGraphImage('png')}
+            style={{ width: "150px" }}
+            onClick={() => exportGraphImage("png")}
           >
             Download as PNG
           </Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="small"
-            style={{ width: '150px' }}
-            onClick={() => exportGraphImage('jpg')}
+            style={{ width: "150px" }}
+            onClick={() => exportGraphImage("jpg")}
           >
             Download as JPG
           </Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="small"
-            style={{ width: '150px' }}
-            onClick={() => exportGraphImage('svg')}
+            style={{ width: "150px" }}
+            onClick={() => exportGraphImage("svg")}
           >
             Download as SVG
           </Button>
