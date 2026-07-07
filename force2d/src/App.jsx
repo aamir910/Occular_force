@@ -6,7 +6,11 @@ import { saveAs } from "file-saver";
 import ForceNetworkGraph from "./forceNetworkGraph/ForceNetworkGraph";
 import Legend from "./Legend/Legend";
 
-const DEFAULT_SELECTED_DISORDERS = ["Cone-rod dystrophy", "Cone dystrophy"];
+const DEFAULT_SELECTED_DISORDERS = [
+  "ALAGILLE SYNDROME",
+  "ALPERS SYNDROME",
+  "ALLAN-HERNDON-DUDLEY SYNDROME",
+];
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
