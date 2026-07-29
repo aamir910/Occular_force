@@ -7,15 +7,17 @@ const { Text } = Typography;
 const LEGEND_ITEMS = [
   {
     group: "Disease",
-    items: [
-      { shape: "triangle", color: "red", label: "Autosomal dominant", class: "Autosomal dominant" },
-      { shape: "triangle", color: "blue", label: "Autosomal recessive", class: "Autosomal recessive" },
-      { shape: "triangle", color: "green", label: "Isolated", class: "Isolated" },
-      { shape: "triangle", color: "purple", label: "Mitochondrial", class: "Mitochondrial" },
-      { shape: "triangle", color: "pink", label: "Other", class: "Other" },
-      { shape: "triangle", color: "cyan", label: "X-linked dominant", class: "X-linked dominant" },
-      { shape: "triangle", color: "magenta", label: "X-linked recessive", class: "X-linked recessive" },
-    ],
+      items: [
+        { shape: "triangle", color: "red", label: "Autosomal dominant", class: "Autosomal dominant" },
+        { shape: "triangle", color: "blue", label: "Autosomal recessive", class: "Autosomal recessive" },
+        { shape: "triangle", color: "green", label: "Isolated", class: "Isolated" },
+        { shape: "triangle", color: "orange", label: "Isolated cases", class: "Isolated cases" },
+        { shape: "triangle", color: "purple", label: "Mitochondrial", class: "Mitochondrial" },
+        { shape: "triangle", color: "pink", label: "Other", class: "Other" },
+        { shape: "triangle", color: "cyan", label: "X-linked dominant", class: "X-linked dominant" },
+        { shape: "triangle", color: "magenta", label: "X-linked recessive", class: "X-linked recessive" },
+        { shape: "triangle", color: "gray", label: "-", class: "-" },
+      ],
   },
   {
     group: "Treatment",
@@ -62,7 +64,8 @@ const Legend = ({
       items: group.items.filter((item) => {
         if (group.group === "Disease") {
           return Object.values(expandedState).some(
-            (details) => String(details.label) === String(item.class)
+            (details) =>
+              String(details.label).toLowerCase() === String(item.class).toLowerCase()
           );
         }
 
@@ -85,7 +88,7 @@ const Legend = ({
 
     return Object.entries(expandedState)
       .filter(([id, details]) => {
-        if (String(details.label) !== String(item.class)) {
+        if (String(details.label).toLowerCase() !== String(item.class).toLowerCase()) {
           return false;
         }
         if (details.type === "DISORDER" && !selectedDisorders.includes(id)) {
@@ -110,7 +113,7 @@ const Legend = ({
 
         const relatedExpandedItems = Object.entries(expandedState).filter(
           ([id, details]) => {
-            if (String(details.label) !== String(item.class)) {
+            if (String(details.label).toLowerCase() !== String(item.class).toLowerCase()) {
               return false;
             }
             if (details.type === "DISORDER") {
@@ -164,7 +167,7 @@ const Legend = ({
       setExpandedState((prev) => {
         const updated = { ...prev };
         Object.entries(updated).forEach(([id, details]) => {
-          if (String(details.label) !== String(targetItem.class)) {
+          if (String(details.label).toLowerCase() !== String(targetItem.class).toLowerCase()) {
             return;
           }
           if (details.type === "DISORDER" && !selectedDisorders.includes(id)) {

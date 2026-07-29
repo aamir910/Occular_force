@@ -45,7 +45,8 @@
       }
 
       // Fill color based on node class
-      switch (node.class) {
+      const classKey = node.class != null ? String(node.class).trim() : "";
+      switch (classKey) {
         case 'Autosomal dominant':
           ctx.fillStyle = 'red';
           break;
@@ -71,19 +72,19 @@
           ctx.fillStyle = 'magenta';
           break;
         case '-':
-          ctx.fillStyle = 'gray'; // Color for "-"
+          ctx.fillStyle = 'gray';
           break;
         case 'KNOWN GENE':
-          ctx.fillStyle = 'yellow'; // Color for circles (KNOWN GENE)
+          ctx.fillStyle = 'yellow';
           break;
         case 'Repurposing Candidate':
-          ctx.fillStyle = 'blue'; // Color for capsules (Repurposing Candidate)
+          ctx.fillStyle = 'blue';
           break;
         case 'Approved Drug':
-          ctx.fillStyle = 'green'; // Color for capsules (Approved Drug)
+          ctx.fillStyle = 'green';
           break;
         default:
-          ctx.fillStyle = 'gray'; // Default color
+          ctx.fillStyle = 'gray';
           break;
       }
 
