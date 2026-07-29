@@ -119,12 +119,6 @@ const Legend = ({
         scrollbarColor: "#888 #f1f1f1",
       }}
     >
-      <Col span={24} style={{ marginBottom: "12px" }}>
-        <Text type="secondary" style={{ fontSize: "12px" }}>
-          Items not in the current graph are disabled. Available items can be checked or unchecked, then click Filter Data.
-        </Text>
-      </Col>
-
       {LEGEND_ITEMS.map((group, groupIndex) => (
         <Col key={groupIndex} span={24} style={{ marginBottom: "14px" }}>
           <div
@@ -164,7 +158,7 @@ const Legend = ({
                     borderRadius: "6px",
                     padding: "8px",
                     border: "1px solid #f0f0f0",
-                    opacity: categoryAvailable ? 1 : 0.55,
+                    opacity: categoryAvailable ? 1 : 0.95,
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
