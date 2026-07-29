@@ -17,21 +17,36 @@ function App() {
   const [originalData, setOriginalData] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [checkedClasses, setCheckedClasses] = useState({
-    "Autosomal recessive": true,
-    "X-linked dominant": true,
-    Other: true,
-    "Isolated cases": true,
-    "Autosomal dominant": true,
-    "X-linked recessive": true,
-    Mitochondrial: true,
-    "-": true,
-    Isolated: true,
-    "KNOWN GENE": true,
-    "Repurposing Candidate": true,
-    "Approved Drug": true,
+    "Autosomal recessive": false,
+    "X-linked dominant": false,
+    Other: false,
+    "Isolated cases": false,
+    "Autosomal dominant": false,
+    "X-linked recessive": false,
+    Mitochondrial: false,
+    "-": false,
+    Isolated: false,
+    "KNOWN GENE": false,
+    "Repurposing Candidate": false,
+    "Approved Drug": false,
   });
 
   const [expandedState, setExpandedState] = useState({});
+  const [availableClasses, setAvailableClasses] = useState({
+    "Autosomal recessive": false,
+    "X-linked dominant": false,
+    Other: false,
+    "Isolated cases": false,
+    "Autosomal dominant": false,
+    "X-linked recessive": false,
+    Mitochondrial: false,
+    "-": false,
+    Isolated: false,
+    "KNOWN GENE": false,
+    "Repurposing Candidate": false,
+    "Approved Drug": false,
+  });
+  const [availableIds, setAvailableIds] = useState({});
   const [uniqueClasses, setUniqueClasses] = useState([]);
   const [selectedDisorders, setSelectedDisorders] = useState(DEFAULT_SELECTED_DISORDERS);
   const [isBoxOpen, setIsBoxOpen] = useState(false);
@@ -85,7 +100,7 @@ function App() {
       const disorder = row.DISORDER;
       if (disorder && !initialState[disorder]) {
         initialState[disorder] = {
-          visible: true,
+          visible: false,
           label: row["MODE OF INHERITANCE"],
           type: "DISORDER",
         };
@@ -95,7 +110,14 @@ function App() {
     return initialState;
   };
 
-  const createNodesAndLinks = (data) => {
+  const createNodesAndLinks = (
+    data,
+    {
+      includeKnownGene = true,
+      includeRepurposing = true,
+      includeApprovedDrug = true,
+    } = {}
+  ) => {
     const nodesMap = new Map();
     const linksSet = new Set();
     const links = [];
@@ -112,96 +134,84 @@ function App() {
       const Repurposing_candidate_chembL_ID = row["Repurposing candidate chembL_ID"];
       const Approved_drug_chembl_ID = row.Approved_drug_chembl_ID;
 
-      if (classOfNode && disorder && expandedState[disorder] !== undefined) {
-        if (!expandedState[disorder].visible) {
-          return;
+      if (disorder && !nodesMap.has(disorder)) {
+        nodesMap.set(disorder, {
+          id: disorder,
+          type: "DISORDER",
+          class: classOfNode,
+          EFO_Ids_Mondo: EFO_Ids_Mondo,
+          ORPHanet_ID: ORPHanet_ID,
+          EYE_FINDING: EYE_FINDING,
+          Modeofinheritance: "",
+          Repurposing_candidate_chembL_ID: "",
+          Approved_drug_chembl_ID: "",
+          linkType: `${knownGene}`,
+        });
+      }
+
+      if (includeKnownGene && knownGene) {
+        if (!nodesMap.has(knownGene)) {
+          nodesMap.set(knownGene, {
+            id: knownGene,
+            type: "KNOWN GENE",
+            class: "KNOWN GENE",
+            EFO_Ids_Mondo: "",
+            ORPHanet_ID: "",
+            EYE_FINDING: "",
+            Modeofinheritance: classOfNode,
+            Repurposing_candidate_chembL_ID: "",
+            Approved_drug_chembl_ID: "",
+          });
+        }
+        if (disorder && knownGene) {
+          const linkKey = `${disorder}-${knownGene}`;
+          if (!linksSet.has(linkKey)) {
+            linksSet.add(linkKey);
+            links.push({ source: disorder, target: knownGene });
+          }
         }
       }
 
-      if (checkedClasses[classOfNode]) {
-        if (!checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
-          return;
-        }
-
-        if (disorder && !nodesMap.has(disorder)) {
-          nodesMap.set(disorder, {
-            id: disorder,
-            type: "DISORDER",
-            class: classOfNode,
-            EFO_Ids_Mondo: EFO_Ids_Mondo,
-            ORPHanet_ID: ORPHanet_ID,
-            EYE_FINDING: EYE_FINDING,
+      if (includeRepurposing && repurposingCandidate) {
+        if (!nodesMap.has(repurposingCandidate)) {
+          nodesMap.set(repurposingCandidate, {
+            id: repurposingCandidate,
+            type: "Repurposing Candidate",
+            class: "Repurposing Candidate",
+            EFO_Ids_Mondo: "",
+            ORPHanet_ID: "",
+            EYE_FINDING: "",
             Modeofinheritance: "",
-            Repurposing_candidate_chembL_ID: "",
+            Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
             Approved_drug_chembl_ID: "",
-            linkType: `${knownGene}`,
           });
         }
-
-        if (checkedClasses["KNOWN GENE"] && knownGene) {
-          if (!nodesMap.has(knownGene)) {
-            nodesMap.set(knownGene, {
-              id: knownGene,
-              type: "KNOWN GENE",
-              class: "KNOWN GENE",
-              EFO_Ids_Mondo: "",
-              ORPHanet_ID: "",
-              EYE_FINDING: "",
-              Modeofinheritance: classOfNode,
-              Repurposing_candidate_chembL_ID: "",
-              Approved_drug_chembl_ID: "",
-            });
-          }
-          if (disorder && knownGene) {
-            const linkKey = `${disorder}-${knownGene}`;
-            if (!linksSet.has(linkKey)) {
-              linksSet.add(linkKey);
-              links.push({ source: disorder, target: knownGene });
-            }
+        if (knownGene && repurposingCandidate) {
+          const linkKey = `${knownGene}-${repurposingCandidate}`;
+          if (!linksSet.has(linkKey)) {
+            linksSet.add(linkKey);
+            links.push({ source: knownGene, target: repurposingCandidate });
           }
         }
+      }
 
-        if (checkedClasses["Repurposing Candidate"] && repurposingCandidate) {
-          if (!nodesMap.has(repurposingCandidate)) {
-            nodesMap.set(repurposingCandidate, {
-              id: repurposingCandidate,
-              type: "Repurposing Candidate",
-              class: "Repurposing Candidate",
-              EFO_Ids_Mondo: "",
-              ORPHanet_ID: "",
-              EYE_FINDING: "",
-              Modeofinheritance: "",
-              Repurposing_candidate_chembL_ID: Repurposing_candidate_chembL_ID,
-              Approved_drug_chembl_ID: "",
-            });
-          }
-          if (knownGene && repurposingCandidate) {
-            const linkKey = `${knownGene}-${repurposingCandidate}`;
-            if (!linksSet.has(linkKey)) {
-              linksSet.add(linkKey);
-              links.push({ source: knownGene, target: repurposingCandidate });
-            }
-          }
+      if (includeApprovedDrug && approvedDrug) {
+        if (!nodesMap.has(approvedDrug)) {
+          nodesMap.set(approvedDrug, {
+            id: approvedDrug,
+            type: "Approved Drug",
+            class: "Approved Drug",
+            EFO_Ids_Mondo: "",
+            ORPHanet_ID: "",
+            EYE_FINDING: "",
+            Approved_drug_chembl_ID: Approved_drug_chembl_ID,
+          });
         }
-
-        if (checkedClasses["Approved Drug"] && approvedDrug) {
-          if (!nodesMap.has(approvedDrug)) {
-            nodesMap.set(approvedDrug, {
-              id: approvedDrug,
-              type: "Approved Drug",
-              class: "Approved Drug",
-              EFO_Ids_Mondo: "",
-              ORPHanet_ID: "",
-              EYE_FINDING: "",
-              Approved_drug_chembl_ID: Approved_drug_chembl_ID,
-            });
-          }
-          if (disorder && approvedDrug) {
-            const linkKey = `${disorder}-${approvedDrug}`;
-            if (!linksSet.has(linkKey)) {
-              linksSet.add(linkKey);
-              links.push({ source: disorder, target: approvedDrug });
-            }
+        if (disorder && approvedDrug) {
+          const linkKey = `${disorder}-${approvedDrug}`;
+          if (!linksSet.has(linkKey)) {
+            linksSet.add(linkKey);
+            links.push({ source: disorder, target: approvedDrug });
           }
         }
       }
@@ -210,99 +220,126 @@ function App() {
     return { nodes: Array.from(nodesMap.values()), links };
   };
 
-  useEffect(() => {
-    if (jsonData) {
-      const scopedRows =
-        selectedDisorders.length > 0
-          ? jsonData.filter((row) => selectedDisorders.includes(row.DISORDER))
-          : [];
-      setExpandedState(buildExpandedStateFromData(scopedRows));
-      if (hasInitialFilterApplied.current) {
-        setGraphData({ nodes: [], links: [] });
-      }
-    }
-  }, [jsonData, selectedDisorders]);
+  const syncLegendFromGraph = useCallback((graph) => {
+    const presentIds = new Set((graph?.nodes || []).map((node) => node.id));
+    const presentClasses = new Set(
+      (graph?.nodes || []).map((node) => String(node.class))
+    );
+
+    setAvailableClasses((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        next[key] = presentClasses.has(String(key));
+      });
+      presentClasses.forEach((cls) => {
+        next[cls] = true;
+      });
+      return next;
+    });
+
+    setAvailableIds(() => {
+      const next = {};
+      presentIds.forEach((id) => {
+        next[id] = true;
+      });
+      return next;
+    });
+
+    setCheckedClasses((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((key) => {
+        next[key] = presentClasses.has(String(key));
+      });
+      return next;
+    });
+
+    setExpandedState((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((id) => {
+        next[id] = {
+          ...next[id],
+          visible: presentIds.has(id),
+        };
+      });
+      return next;
+    });
+  }, []);
 
   const handleClassCheckboxChange = (className, checked) => {
-    setCheckedClasses((prevCheckedClasses) => ({
-      ...prevCheckedClasses,
+    setCheckedClasses((prev) => ({
+      ...prev,
       [className]: checked,
     }));
   };
 
-  const handleFilterData = useCallback(
-    ({ selectedClasses, selectedExpandedItems }) => {
-      if (jsonData) {
-        if (selectedDisorders.length === 0) {
-          setGraphData({ nodes: [], links: [] });
-          return;
-        }
-
-        const filteredData = jsonData.filter((row) => {
-          const classOfNode = row["MODE OF INHERITANCE"];
-          const disorder = row.DISORDER;
-          const hasRepurposingCandidate = !!row["Repurposing candidate name"];
-
-          if (!selectedDisorders.includes(disorder)) {
-            return false;
-          }
-
-          if (!selectedClasses.includes(classOfNode)) {
-            return false;
-          }
-
-          if (!selectedClasses.includes("Repurposing Candidate") && hasRepurposingCandidate) {
-            return false;
-          }
-
-          if (disorder && expandedState[disorder] !== undefined) {
-            return selectedExpandedItems.includes(disorder);
-          }
-
-          return true;
-        });
-
-        const newGraphData = createNodesAndLinks(filteredData);
-        setGraphData(newGraphData);
-      }
-    },
-    [jsonData, selectedDisorders, expandedState, checkedClasses]
-  );
-
   const applyFilters = useCallback(() => {
-    const selectedClasses = Object.entries(checkedClasses)
-      .filter(([, checked]) => checked)
-      .map(([className]) => className);
+    if (!jsonData) return;
 
-    const selectedExpandedItems = Object.entries(expandedState)
-      .filter(([id, details]) => {
-        if (!details.visible) {
-          return false;
-        }
-        if (details.type === "DISORDER") {
-          return selectedDisorders.includes(id);
-        }
+    if (selectedDisorders.length === 0) {
+      setGraphData({ nodes: [], links: [] });
+      syncLegendFromGraph({ nodes: [], links: [] });
+      return;
+    }
+
+    const hasLegendChecks = Object.values(checkedClasses).some(Boolean);
+
+    const filteredData = jsonData.filter((row) => {
+      if (!selectedDisorders.includes(row.DISORDER)) {
+        return false;
+      }
+
+      if (!hasLegendChecks) {
         return true;
-      })
-      .map(([id]) => id);
+      }
 
-    handleFilterData({ selectedClasses, selectedExpandedItems });
-  }, [checkedClasses, expandedState, selectedDisorders, handleFilterData]);
+      const classOfNode = row["MODE OF INHERITANCE"];
+      const disorder = row.DISORDER;
+      const hasRepurposingCandidate = !!row["Repurposing candidate name"];
+
+      if (classOfNode && !checkedClasses[classOfNode]) {
+        return false;
+      }
+
+      if (!checkedClasses["Repurposing Candidate"] && hasRepurposingCandidate) {
+        return false;
+      }
+
+      if (disorder && expandedState[disorder] !== undefined && !expandedState[disorder].visible) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // When legend checks exist, also respect treatment toggles in node building
+    const newGraphData = createNodesAndLinks(filteredData, {
+      includeKnownGene: !hasLegendChecks || !!checkedClasses["KNOWN GENE"],
+      includeRepurposing: !hasLegendChecks || !!checkedClasses["Repurposing Candidate"],
+      includeApprovedDrug: !hasLegendChecks || !!checkedClasses["Approved Drug"],
+    });
+    setGraphData(newGraphData);
+    syncLegendFromGraph(newGraphData);
+  }, [jsonData, selectedDisorders, checkedClasses, expandedState, syncLegendFromGraph]);
 
   useEffect(() => {
-    if (
-      jsonData &&
-      selectedDisorders.length > 0 &&
-      Object.keys(expandedState).length > 0 &&
-      !hasInitialFilterApplied.current
-    ) {
+    if (jsonData) {
+      setExpandedState(buildExpandedStateFromData(jsonData));
+    }
+  }, [jsonData]);
+
+  useEffect(() => {
+    if (jsonData && selectedDisorders.length > 0 && !hasInitialFilterApplied.current) {
       hasInitialFilterApplied.current = true;
       applyFilters();
     }
-  }, [jsonData, selectedDisorders, expandedState, applyFilters]);
+  }, [jsonData, selectedDisorders, applyFilters]);
 
   const handleDisorderSelectionChange = (value) => {
     setSelectedDisorders(value);
+    if (hasInitialFilterApplied.current) {
+      setGraphData({ nodes: [], links: [] });
+      syncLegendFromGraph({ nodes: [], links: [] });
+    }
   };
 
   const handleOpenBox = () => {
@@ -405,12 +442,11 @@ function App() {
           >
             <Legend
               checkedClasses={checkedClasses}
-              onClassChange={handleClassCheckboxChange}
-              setCheckedClasses={setCheckedClasses}
               expandedState={expandedState}
+              availableClasses={availableClasses}
+              availableIds={availableIds}
+              onClassChange={handleClassCheckboxChange}
               setExpandedState={setExpandedState}
-              selectedDisorders={selectedDisorders}
-              jsonData={jsonData}
             />
           </Card>
         </Col>
