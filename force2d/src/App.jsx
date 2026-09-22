@@ -14,17 +14,17 @@ const DEFAULT_SELECTED_DISORDERS = [
 ];
 
 const FILTER_TYPE_OPTIONS = [
-  { value: "disorder_name", label: "Disorder Name" },
-  { value: "mode_of_inheritance", label: "Mode of Inheritance" },
-  { value: "known_gene", label: "Known Gene" },
-  { value: "repurposing_candidate", label: "Repurposing Candidate" },
-  { value: "approved_drug", label: "Approved Drug" },
+  { value: "disorder_name", label: "Disease name" },
+  { value: "mode_of_inheritance", label: "Disease class" },
+  { value: "known_gene", label: "Genes" },
+  { value: "repurposing_candidate", label: "Repurposing candidates" },
+  { value: "approved_drug", label: "Approved drugs" },
 ];
 
 const FILTER_VALUE_PLACEHOLDERS = {
-  disorder_name: "Select one or more disorders",
-  mode_of_inheritance: "Select one or more modes of inheritance",
-  known_gene: "Select one or more known genes",
+  disorder_name: "Select one or more disease names",
+  mode_of_inheritance: "Select one or more disease classes",
+  known_gene: "Select one or more genes",
   repurposing_candidate: "Select one or more repurposing candidates",
   approved_drug: "Select one or more approved drugs",
 };
