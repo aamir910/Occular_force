@@ -577,7 +577,15 @@ function App() {
 
               {filterType && (
                 <>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      flex: 1,
+                      minWidth: 220,
+                    }}
+                  >
                     <label
                       htmlFor="filter-values"
                       style={{ display: "block", fontWeight: 500 }}
@@ -597,7 +605,7 @@ function App() {
                       value={selectedFilterValues}
                       onChange={handleFilterValuesChange}
                       optionFilterProp="children"
-                      style={{ width: 360 }}
+                      style={{ width: "100%" }}
                     >
                       {(filterOptions[filterType] || []).map((option) => (
                         <Option key={option} value={option}>
