@@ -16,17 +16,15 @@ const DEFAULT_SELECTED_DISORDERS = [
 const FILTER_TYPE_OPTIONS = [
   { value: "disorder_name", label: "Disease name" },
   { value: "mode_of_inheritance", label: "Disease class" },
-  { value: "known_gene", label: "Genes" },
-  { value: "repurposing_candidate", label: "Repurposing candidates" },
-  { value: "approved_drug", label: "Approved drugs" },
+  { value: "known_gene", label: "Gene name" },
+  { value: "drug_name", label: "Drug name" },
 ];
 
 const FILTER_VALUE_PLACEHOLDERS = {
   disorder_name: "Select one or more disease names",
   mode_of_inheritance: "Select one or more disease classes",
-  known_gene: "Select one or more genes",
-  repurposing_candidate: "Select one or more repurposing candidates",
-  approved_drug: "Select one or more approved drugs",
+  known_gene: "Select one or more gene names",
+  drug_name: "Select one or more drug names",
 };
 
 function App() {
@@ -70,8 +68,7 @@ function App() {
     disorder_name: [],
     mode_of_inheritance: [],
     known_gene: [],
-    repurposing_candidate: [],
-    approved_drug: [],
+    drug_name: [],
   });
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const rowRef = useRef(null);
@@ -103,8 +100,7 @@ function App() {
     const disorderNames = new Set();
     const modesOfInheritance = new Set();
     const knownGenes = new Set();
-    const repurposingCandidates = new Set();
-    const approvedDrugs = new Set();
+    const drugNames = new Set();
 
     data.forEach((row) => {
       if (row.DISORDER) disorderNames.add(row.DISORDER);
@@ -113,9 +109,9 @@ function App() {
         knownGenes.add(row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"]);
       }
       if (row["Repurposing candidate name"]) {
-        repurposingCandidates.add(row["Repurposing candidate name"]);
+        drugNames.add(row["Repurposing candidate name"]);
       }
-      if (row.Approved_drug_name) approvedDrugs.add(row.Approved_drug_name);
+      if (row.Approved_drug_name) drugNames.add(row.Approved_drug_name);
     });
 
     const sorted = (set) => Array.from(set).sort((a, b) => String(a).localeCompare(String(b)));
@@ -124,8 +120,7 @@ function App() {
       disorder_name: sorted(disorderNames),
       mode_of_inheritance: sorted(modesOfInheritance),
       known_gene: sorted(knownGenes),
-      repurposing_candidate: sorted(repurposingCandidates),
-      approved_drug: sorted(approvedDrugs),
+      drug_name: sorted(drugNames),
     });
 
     const validDefaults = DEFAULT_SELECTED_DISORDERS.filter((disorder) =>
@@ -146,10 +141,11 @@ function App() {
         return values.includes(row["MODE OF INHERITANCE"]);
       case "known_gene":
         return values.includes(row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"]);
-      case "repurposing_candidate":
-        return values.includes(row["Repurposing candidate name"]);
-      case "approved_drug":
-        return values.includes(row.Approved_drug_name);
+      case "drug_name":
+        return (
+          values.includes(row["Repurposing candidate name"]) ||
+          values.includes(row.Approved_drug_name)
+        );
       default:
         return false;
     }
@@ -564,7 +560,7 @@ function App() {
                   htmlFor="filter-type"
                   style={{ display: "block", fontWeight: 500 }}
                 >
-                  Filter Type
+                  Filter type
                 </label>
                 <Select
                   id="filter-type"
@@ -619,7 +615,7 @@ function App() {
                     onClick={applyFilters}
                     disabled={selectedFilterValues.length === 0}
                   >
-                    Filter Data
+                    Filter data
                   </Button>
                 </>
               )}
@@ -635,7 +631,7 @@ function App() {
                   overflow: "hidden",
                 }}
               >
-                Select filter values and click Filter Data to view the graph.
+                Select filter values and click Filter data to view the graph.
               </p>
             )}
           </Card>
