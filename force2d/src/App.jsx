@@ -6,11 +6,28 @@ import { saveAs } from "file-saver";
 import ForceNetworkGraph from "./forceNetworkGraph/ForceNetworkGraph";
 import Legend from "./Legend/Legend";
 
+const DEFAULT_FILTER_TYPE = "disorder_name";
 const DEFAULT_SELECTED_DISORDERS = [
   "ALAGILLE SYNDROME",
   "ALPERS SYNDROME",
   "ALLAN-HERNDON-DUDLEY SYNDROME",
 ];
+
+const FILTER_TYPE_OPTIONS = [
+  { value: "disorder_name", label: "Disorder Name" },
+  { value: "mode_of_inheritance", label: "Mode of Inheritance" },
+  { value: "known_gene", label: "Known Gene" },
+  { value: "repurposing_candidate", label: "Repurposing Candidate" },
+  { value: "approved_drug", label: "Approved Drug" },
+];
+
+const FILTER_VALUE_PLACEHOLDERS = {
+  disorder_name: "Select one or more disorders",
+  mode_of_inheritance: "Select one or more modes of inheritance",
+  known_gene: "Select one or more known genes",
+  repurposing_candidate: "Select one or more repurposing candidates",
+  approved_drug: "Select one or more approved drugs",
+};
 
 function App() {
   const [jsonData, setJsonData] = useState(null);
@@ -47,8 +64,15 @@ function App() {
     "Approved Drug": false,
   });
   const [availableIds, setAvailableIds] = useState({});
-  const [uniqueClasses, setUniqueClasses] = useState([]);
-  const [selectedDisorders, setSelectedDisorders] = useState(DEFAULT_SELECTED_DISORDERS);
+  const [filterType, setFilterType] = useState(DEFAULT_FILTER_TYPE);
+  const [selectedFilterValues, setSelectedFilterValues] = useState(DEFAULT_SELECTED_DISORDERS);
+  const [filterOptions, setFilterOptions] = useState({
+    disorder_name: [],
+    mode_of_inheritance: [],
+    known_gene: [],
+    repurposing_candidate: [],
+    approved_drug: [],
+  });
   const [isBoxOpen, setIsBoxOpen] = useState(false);
   const rowRef = useRef(null);
   const hasInitialFilterApplied = useRef(false);
@@ -68,29 +92,67 @@ function App() {
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
       console.log(jsonData, "jsonData");
       setJsonData(jsonData);
-      extractUniqueClasses(jsonData);
+      extractFilterOptions(jsonData);
       setOriginalData(jsonData);
     } catch (error) {
       console.error("Error reading the Excel file:", error);
     }
   };
 
-  const extractUniqueClasses = (data) => {
-    const classes = new Set();
+  const extractFilterOptions = (data) => {
+    const disorderNames = new Set();
+    const modesOfInheritance = new Set();
+    const knownGenes = new Set();
+    const repurposingCandidates = new Set();
+    const approvedDrugs = new Set();
+
     data.forEach((row) => {
-      const classOfNode = row["DISORDER"];
-      if (classOfNode) {
-        classes.add(classOfNode);
+      if (row.DISORDER) disorderNames.add(row.DISORDER);
+      if (row["MODE OF INHERITANCE"]) modesOfInheritance.add(row["MODE OF INHERITANCE"]);
+      if (row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"]) {
+        knownGenes.add(row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"]);
       }
-    });
-    setUniqueClasses(Array.from(classes).sort((a, b) => a.localeCompare(b)));
-    setSelectedDisorders((prev) => {
-      const validDefaults = DEFAULT_SELECTED_DISORDERS.filter((disorder) => classes.has(disorder));
-      if (validDefaults.length > 0) {
-        return validDefaults;
+      if (row["Repurposing candidate name"]) {
+        repurposingCandidates.add(row["Repurposing candidate name"]);
       }
-      return prev;
+      if (row.Approved_drug_name) approvedDrugs.add(row.Approved_drug_name);
     });
+
+    const sorted = (set) => Array.from(set).sort((a, b) => String(a).localeCompare(String(b)));
+
+    setFilterOptions({
+      disorder_name: sorted(disorderNames),
+      mode_of_inheritance: sorted(modesOfInheritance),
+      known_gene: sorted(knownGenes),
+      repurposing_candidate: sorted(repurposingCandidates),
+      approved_drug: sorted(approvedDrugs),
+    });
+
+    const validDefaults = DEFAULT_SELECTED_DISORDERS.filter((disorder) =>
+      disorderNames.has(disorder)
+    );
+    if (validDefaults.length > 0) {
+      setSelectedFilterValues(validDefaults);
+    }
+  };
+
+  const rowMatchesPrimaryFilter = (row, type, values) => {
+    if (!values.length) return false;
+
+    switch (type) {
+      case "disorder_name":
+        return values.includes(row.DISORDER);
+      case "mode_of_inheritance":
+        return values.includes(row["MODE OF INHERITANCE"]);
+      case "known_gene":
+        return values.includes(row["KNOWN GENES OR CHROMOSOMAL ABNORMALITY INVOLVED"]);
+      case "repurposing_candidate":
+        return values.includes(row["Repurposing candidate name"]);
+      case "approved_drug":
+        return values.includes(row.Approved_drug_name);
+      default:
+        return false;
+    }
   };
 
   const buildExpandedStateFromData = (data) => {
@@ -275,7 +337,7 @@ function App() {
   const applyFilters = useCallback(() => {
     if (!jsonData) return;
 
-    if (selectedDisorders.length === 0) {
+    if (selectedFilterValues.length === 0) {
       setGraphData({ nodes: [], links: [] });
       syncLegendFromGraph({ nodes: [], links: [] });
       return;
@@ -284,7 +346,7 @@ function App() {
     const hasLegendChecks = Object.values(checkedClasses).some(Boolean);
 
     const filteredData = jsonData.filter((row) => {
-      if (!selectedDisorders.includes(row.DISORDER)) {
+      if (!rowMatchesPrimaryFilter(row, filterType, selectedFilterValues)) {
         return false;
       }
 
@@ -319,7 +381,7 @@ function App() {
     });
     setGraphData(newGraphData);
     syncLegendFromGraph(newGraphData);
-  }, [jsonData, selectedDisorders, checkedClasses, expandedState, syncLegendFromGraph]);
+  }, [jsonData, filterType, selectedFilterValues, checkedClasses, expandedState, syncLegendFromGraph]);
 
   useEffect(() => {
     if (jsonData) {
@@ -328,18 +390,32 @@ function App() {
   }, [jsonData]);
 
   useEffect(() => {
-    if (jsonData && selectedDisorders.length > 0 && !hasInitialFilterApplied.current) {
+    if (
+      jsonData &&
+      selectedFilterValues.length > 0 &&
+      !hasInitialFilterApplied.current
+    ) {
       hasInitialFilterApplied.current = true;
       applyFilters();
     }
-  }, [jsonData, selectedDisorders, applyFilters]);
+  }, [jsonData, selectedFilterValues, applyFilters]);
 
-  const handleDisorderSelectionChange = (value) => {
-    setSelectedDisorders(value);
+  const clearGraphUntilFilter = () => {
     if (hasInitialFilterApplied.current) {
       setGraphData({ nodes: [], links: [] });
       syncLegendFromGraph({ nodes: [], links: [] });
     }
+  };
+
+  const handleFilterTypeChange = (value) => {
+    setFilterType(value);
+    setSelectedFilterValues([]);
+    clearGraphUntilFilter();
+  };
+
+  const handleFilterValuesChange = (value) => {
+    setSelectedFilterValues(value);
+    clearGraphUntilFilter();
   };
 
   const handleOpenBox = () => {
@@ -476,37 +552,58 @@ function App() {
           >
             <div style={{ marginBottom: "16px" }}>
               <label
-                htmlFor="disorder-filter"
+                htmlFor="filter-type"
                 style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
               >
-                Filter by Disorder Name
+                Filter Type
               </label>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <Select
-                  id="disorder-filter"
-                  mode="multiple"
-                  showSearch
-                  allowClear
-                  placeholder="Select one or more disorders"
-                  value={selectedDisorders}
-                  onChange={handleDisorderSelectionChange}
-                  optionFilterProp="children"
-                  style={{ flex: 1 }}
-                >
-                  {uniqueClasses.map((disorder) => (
-                    <Option key={disorder} value={disorder}>
-                      {disorder}
-                    </Option>
-                  ))}
-                </Select>
-                <Button
-                  type="primary"
-                  onClick={applyFilters}
-                  disabled={selectedDisorders.length === 0}
-                >
-                  Filter Data
-                </Button>
-              </div>
+              <Select
+                id="filter-type"
+                value={filterType}
+                onChange={handleFilterTypeChange}
+                style={{ width: "100%", marginBottom: "12px" }}
+                options={FILTER_TYPE_OPTIONS}
+              />
+
+              {filterType && (
+                <>
+                  <label
+                    htmlFor="filter-values"
+                    style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
+                  >
+                    {
+                      FILTER_TYPE_OPTIONS.find((option) => option.value === filterType)
+                        ?.label
+                    }
+                  </label>
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <Select
+                      id="filter-values"
+                      mode="multiple"
+                      showSearch
+                      allowClear
+                      placeholder={FILTER_VALUE_PLACEHOLDERS[filterType]}
+                      value={selectedFilterValues}
+                      onChange={handleFilterValuesChange}
+                      optionFilterProp="children"
+                      style={{ flex: 1 }}
+                    >
+                      {(filterOptions[filterType] || []).map((option) => (
+                        <Option key={option} value={option}>
+                          {option}
+                        </Option>
+                      ))}
+                    </Select>
+                    <Button
+                      type="primary"
+                      onClick={applyFilters}
+                      disabled={selectedFilterValues.length === 0}
+                    >
+                      Filter Data
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
 
             {graphData.nodes.length > 0 ? (
@@ -519,7 +616,7 @@ function App() {
                   overflow: "hidden",
                 }}
               >
-                Select disorders and click Filter Data to view the graph.
+                Select filter values and click Filter Data to view the graph.
               </p>
             )}
           </Card>
