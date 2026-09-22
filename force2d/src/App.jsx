@@ -550,43 +550,54 @@ function App() {
               borderRadius: "8px",
             }}
           >
-            <div style={{ marginBottom: "16px" }}>
-              <label
-                htmlFor="filter-type"
-                style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-              >
-                Filter Type
-              </label>
-              <Select
-                id="filter-type"
-                value={filterType}
-                onChange={handleFilterTypeChange}
-                style={{ width: "100%", marginBottom: "12px" }}
-                options={FILTER_TYPE_OPTIONS}
-              />
+            <div
+              style={{
+                marginBottom: "16px",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                alignItems: "flex-end",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label
+                  htmlFor="filter-type"
+                  style={{ display: "block", fontWeight: 500 }}
+                >
+                  Filter Type
+                </label>
+                <Select
+                  id="filter-type"
+                  value={filterType}
+                  onChange={handleFilterTypeChange}
+                  style={{ width: 220 }}
+                  options={FILTER_TYPE_OPTIONS}
+                />
+              </div>
 
               {filterType && (
                 <>
-                  <label
-                    htmlFor="filter-values"
-                    style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-                  >
-                    {
-                      FILTER_TYPE_OPTIONS.find((option) => option.value === filterType)
-                        ?.label
-                    }
-                  </label>
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label
+                      htmlFor="filter-values"
+                      style={{ display: "block", fontWeight: 500 }}
+                    >
+                      {
+                        FILTER_TYPE_OPTIONS.find((option) => option.value === filterType)
+                          ?.label
+                      }
+                    </label>
                     <Select
                       id="filter-values"
                       mode="multiple"
                       showSearch
                       allowClear
+                      maxTagCount="responsive"
                       placeholder={FILTER_VALUE_PLACEHOLDERS[filterType]}
                       value={selectedFilterValues}
                       onChange={handleFilterValuesChange}
                       optionFilterProp="children"
-                      style={{ flex: 1 }}
+                      style={{ width: 360 }}
                     >
                       {(filterOptions[filterType] || []).map((option) => (
                         <Option key={option} value={option}>
@@ -594,14 +605,14 @@ function App() {
                         </Option>
                       ))}
                     </Select>
-                    <Button
-                      type="primary"
-                      onClick={applyFilters}
-                      disabled={selectedFilterValues.length === 0}
-                    >
-                      Filter Data
-                    </Button>
                   </div>
+                  <Button
+                    type="primary"
+                    onClick={applyFilters}
+                    disabled={selectedFilterValues.length === 0}
+                  >
+                    Filter Data
+                  </Button>
                 </>
               )}
             </div>
